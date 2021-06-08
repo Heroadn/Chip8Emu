@@ -1,0 +1,4 @@
+Hello there, this is a test binary file.
+What do you think?
+
+.
