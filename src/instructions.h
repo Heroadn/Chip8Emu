@@ -27,6 +27,12 @@ void _2nnn(CPU cpu,
            Gfx gfx,
            uint16_t op);
 
+//Skip if equal
+void _3xkk(CPU cpu,
+           Memory mem,
+           Gfx gfx,
+           uint16_t op);
+
 //Draw - 0xd000
 void _dxyn(CPU cpu,
            Memory mem,

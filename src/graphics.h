@@ -9,6 +9,7 @@
 #define INTERNAL_WIDTH 64
 #define INTERNAL_HEIGHT 32
 #define PIXEL_SIZE 8
+#define CHANNELS 3
 
 typedef struct gfx_type *Gfx;
 

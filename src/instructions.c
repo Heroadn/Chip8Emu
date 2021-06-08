@@ -47,6 +47,18 @@ void _2nnn(CPU cpu,
     printf("CALL %x\n", cpu_get_pc(cpu) + 2);
 }
 
+void _3xkk(CPU cpu,
+           Memory mem,
+           Gfx gfx,
+           uint16_t op)
+{
+    printf("SKIP %x == %x\n", cpu_get_reg(cpu, op & 0xF00), (op & 0x0FF));
+    if(cpu_get_reg(cpu, op & 0xF00) == (op & 0x0FF))
+    {
+        //cpu_set_pc(cpu, cpu_get_pc(cpu));
+    }
+}
+
 void _dxyn(CPU cpu,
            Memory mem,
            Gfx gfx,

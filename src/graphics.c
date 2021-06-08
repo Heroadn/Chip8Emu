@@ -5,7 +5,6 @@
 #include <stdarg.h>
 #include <assert.h>
 #include "graphics.h"
-#define CHANNELS 3
 
 typedef struct gfx_type
 {
@@ -72,7 +71,7 @@ void gfx_draw_sprite(uint8_t offset_x,
 
         for (int j = 0; j < 8; j++)
         {
-            gfx->screen_pixels[(offset_x + j) % INTERNAL_WIDTH][(offset_y + i) % INTERNAL_HEIGHT] =
+            gfx->screen_pixels[offset_x + j][offset_y + i] =
                 ((pixel & (mask >> j))) ? 1 : 0;
         }
     }
@@ -116,12 +115,12 @@ void gfx_draw_screen(Gfx gfx)
     {
         for (int x = 0; x < INTERNAL_WIDTH; x++)
         {
-            rect.x *= PIXEL_SIZE;
-            rect.y *= PIXEL_SIZE;
+            rect.x = x * PIXEL_SIZE;
+            rect.y = y * PIXEL_SIZE;
             rect.h = PIXEL_SIZE;
             rect.w = PIXEL_SIZE;
 
-            //printf("%d", gfx->screen_pixels[x][y]);
+            printf("%d", gfx->screen_pixels[x][y]);
             if (gfx->screen_pixels[x][y])
             {
                 gfx_draw_pixel(rect,
@@ -135,7 +134,7 @@ void gfx_draw_screen(Gfx gfx)
                                gfx);
             }
         }
-        //printf("\n");
+        printf("\n");
     }
 }
 

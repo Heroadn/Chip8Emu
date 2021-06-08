@@ -20,7 +20,7 @@ CPU cpu_create()
     cpu->instructions[0] = nop;
     cpu->instructions[1] = _1nnn;
     cpu->instructions[2] = _2nnn;
-    cpu->instructions[3] = not_implmented;
+    cpu->instructions[3] = _3xkk;
     cpu->instructions[4] = not_implmented;
     cpu->instructions[5] = not_implmented;
     cpu->instructions[6] = _6xkk;
