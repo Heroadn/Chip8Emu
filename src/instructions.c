@@ -4,6 +4,13 @@
 #include "graphics.h"
 #include "instructions.h"
 
+typedef struct opcode
+{
+    uint8_t opcode;
+    uint8_t values[3];
+    char *menemonic;
+};
+
 void not_implmented(CPU cpu,
                     Memory mem,
                     Gfx gfx,
@@ -18,6 +25,16 @@ void nop(CPU cpu,
          uint16_t op)
 {
     printf("NOP\n");
+}
+
+void _00ee(CPU cpu,
+           Memory mem,
+           Gfx gfx,
+           uint16_t op)
+{
+    printf("RET %x\n", cpu_get_sp(cpu));
+    cpu_set_pc(cpu, cpu_stack_pop(cpu));
+    cpu_stack_print(cpu);
 }
 
 void _1nnn(CPU cpu,
@@ -39,6 +56,9 @@ void _2nnn(CPU cpu,
            uint16_t op)
 {
     //salvar na stack endereço do pc atual
+    cpu_stack_push(cpu,
+                   cpu_get_pc(cpu));
+
     cpu_set_pc(cpu,
                (op & 0x0FFF));
     cpu_set_pc(cpu,
@@ -52,10 +72,107 @@ void _3xkk(CPU cpu,
            Gfx gfx,
            uint16_t op)
 {
-    printf("SKIP %x == %x\n", cpu_get_reg(cpu, op & 0xF00), (op & 0x0FF));
-    if(cpu_get_reg(cpu, op & 0xF00) == (op & 0x0FF))
+    int x = (op & 0xF00) >> 8;
+    int kk = (op & 0x0FF);
+
+    printf("SKIP Vx == kk, %x == %x\n", cpu_get_reg(cpu, x), kk);
+    if (cpu_get_reg(cpu, x) == kk)
     {
-        //cpu_set_pc(cpu, cpu_get_pc(cpu));
+        cpu_set_pc(cpu, cpu_get_pc(cpu) + 2);
+    }
+}
+
+//Skip if Vx != kk - 0x4000
+void _4xkk(CPU cpu,
+           Memory mem,
+           Gfx gfx,
+           uint16_t op)
+{
+    int x = (op & 0xF00) >> 8;
+    int kk = (op & 0x0FF);
+
+    printf("SKIP Vx != kk, %x != %x\n", cpu_get_reg(cpu, x), kk);
+    if (cpu_get_reg(cpu, x) != kk)
+    {
+        cpu_set_pc(cpu, cpu_get_pc(cpu) + 2);
+    }
+}
+
+//Skip if Vx == Vy - 0x5000
+void _5xy0(CPU cpu,
+           Memory mem,
+           Gfx gfx,
+           uint16_t op)
+{
+    int x = (op & 0xF00) >> 8;
+    int y = (op & 0x0F0) >> 4;
+
+    printf("SKIP V%x, V%x, %x == %x\n", x, y,
+           cpu_get_reg(cpu, x), cpu_get_reg(cpu, y));
+
+    if (cpu_get_reg(cpu, x) == cpu_get_reg(cpu, y))
+    {
+        cpu_set_pc(cpu, cpu_get_pc(cpu) + 2);
+    }
+}
+
+//ADD - Vx = Vx + kk
+void _7xkk(CPU cpu,
+           Memory mem,
+           Gfx gfx,
+           uint16_t op)
+{
+    int x = (op & 0xF00) >> 8;
+    int kk = (op & 0x0FF);
+
+    printf("ADD V%x = %x + %x\n", x, cpu_get_reg(cpu, x), kk);
+    cpu_set_reg(cpu, x, cpu_get_reg(cpu, x) + kk);
+}
+
+void _8xy0(CPU cpu,
+           Memory mem,
+           Gfx gfx,
+           uint16_t op)
+{
+    int x = (op & 0xF00) >> 8;
+    int y = (op & 0x0F0) >> 4;
+
+    printf("LD V%x, V%x, V%x = %x\n", x, y,
+           x, cpu_get_reg(cpu, y));
+    cpu_ld_reg(cpu, y, x);
+}
+
+//OR Vx = Vx OR Vy - 0x8001
+void _8xy1(CPU cpu,
+           Memory mem,
+           Gfx gfx,
+           uint16_t op)
+{
+    int x = (op & 0xF00) >> 8;
+    int y = (op & 0x0F0) >> 4;
+
+    //cpu_set_reg(cpu, x, cpu_get_reg(cpu, y) | cpu_get_reg(cpu, x));
+    cpu_or_reg(cpu, y, x);
+    printf("OR V%x = %x | %x\n",
+           x,
+           cpu_get_reg(cpu, x),
+           cpu_get_reg(cpu, y));
+}
+
+void _9xy0(CPU cpu,
+           Memory mem,
+           Gfx gfx,
+           uint16_t op)
+{
+    int x = (op & 0xF00) >> 8;
+    int y = (op & 0x0F0) >> 4;
+
+    printf("SKIP V%x, V%x, %x == %x\n", x, y,
+           cpu_get_reg(cpu, x), cpu_get_reg(cpu, y));
+
+    if (cpu_get_reg(cpu, x) != cpu_get_reg(cpu, y))
+    {
+        cpu_set_pc(cpu, cpu_get_pc(cpu) + 2);
     }
 }
 
@@ -111,3 +228,42 @@ void _annn(CPU cpu,
                   (op & 0xFFF));
     printf("LD Vi = %x\n", (op & 0xFFF));
 }
+
+void _fx0a(CPU cpu,
+           Memory mem,
+           Gfx gfx,
+           uint16_t op)
+{
+    uint8_t x = cpu_get_reg(cpu,
+                            (op & 0xF00) >> 8);
+
+    printf("LD V%x = %x\n", (op & 0xFFF));
+}
+
+/*
+enum
+    {
+        CLS,
+        LD,
+        RET,
+        JP,
+        CALL,
+        SE,
+        SNE,
+        ADD,
+        OR,
+        AND,
+        XOR,
+        ADD,
+        SUB,
+        SHR,
+        SUBN,
+        SHL,
+        SUBN,
+        SHL,
+        RND,
+        DRW,
+        SKP,
+        SKNP
+    } menemonics;
+    */
