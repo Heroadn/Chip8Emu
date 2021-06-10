@@ -12,6 +12,9 @@ int file_read_line(const int n,
                    FILE *fp,
                    char *str);
 
+int file_write_line(FILE *fp,
+                    char *str);
+
 //return the amount of chars in the file
 long file_nchars(FILE *fp);
 
