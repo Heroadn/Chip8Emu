@@ -20,18 +20,35 @@ typedef struct gfx_type
 
 Gfx gfx_create(int screen_width,
                int screen_height,
+               const pallet pallets,
                const char *filename)
 {
     Gfx gfx = malloc(sizeof(struct gfx_type));
     gfx->screen_width = screen_width;
     gfx->screen_height = screen_height;
     gfx->bits_per_pixel = 32;
+
+    gfx->colors[0] = pallets.colors[0];
+    gfx->colors[1] = pallets.colors[1];
+    gfx->colors[2] = pallets.colors[2];
+    gfx->background[0] = pallets.background[0];
+    gfx->background[1] = pallets.background[1];
+    gfx->background[2] = pallets.background[2];
+    /*
+    gfx->colors[0] = pallet[0][0];
+    gfx->colors[1] = pallet[1][0];
+    gfx->colors[2] = pallet[2][0];
+    gfx->background[0] = pallet[0][1];
+    gfx->background[1] = pallet[1][1];
+    gfx->background[2] = pallet[2][1];
+
     gfx->colors[0] = 43;
     gfx->colors[1] = 83;
     gfx->colors[2] = 41;
     gfx->background[0] = 156;
     gfx->background[1] = 204;
     gfx->background[2] = 156;
+    */
 
     memset(gfx->screen_pixels,
            0,

@@ -13,9 +13,16 @@
 
 typedef struct gfx_type *Gfx;
 
+typedef struct
+{
+    uint8_t colors[CHANNELS];
+    uint8_t background[CHANNELS]
+} pallet;
+
 //
 Gfx gfx_create(int screen_width,
                int screen_height,
+               const pallet pallets,
                const char *filename);
 
 //
