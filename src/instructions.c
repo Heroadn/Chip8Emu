@@ -3,13 +3,7 @@
 #include "memory.h"
 #include "graphics.h"
 #include "instructions.h"
-
-typedef struct opcode
-{
-    uint8_t opcode;
-    uint8_t values[3];
-    char *menemonic;
-};
+#include "debug/debugger.h"
 
 void not_implmented(CPU cpu,
                     Memory mem,
