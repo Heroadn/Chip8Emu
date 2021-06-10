@@ -15,72 +15,97 @@
 #include "rom.h"
 #include "cpu.h"
 #include "graphics.h"
-
-//Screen dimension constants
-const int SCREEN_WIDTH = 640;
-const int SCREEN_HEIGHT = 480;
-const int BITS_PER_PIXEL = 32;
-const char *tab_name = "Hello World";
+#include "config.h"
 
 void loader(ROM rom,
             Memory mem,
             const char *filename);
 
 void clean(CPU cpu,
-           Memory mem);
+           Memory mem,
+           Config *conf);
 
-void decode(CPU cpu,
-            uint16_t op,
-            Memory mem,
-            Gfx gfx);
+void execute(CPU cpu,
+             Memory mem,
+             Gfx gfx,
+             Instruction instruction,
+             uint16_t op);
 
-void execute(CPU cpu);
+void cycle(CPU cpu,
+           Memory mem,
+           Gfx gfx);
+
+Instruction decode(CPU cpu,
+                   uint16_t op);
 
 uint16_t loop(CPU cpu,
-              Memory mem);
+              Memory mem,
+              Gfx gfx);
 
 uint16_t fetch(CPU cpu,
                Memory mem);
 
 int main(void)
 {
-
     ROM rom = rom_create();
     CPU cpu = cpu_create();
     Memory mem = mem_create();
+    Config conf = cfg_create();
+    Gfx gfx = gfx_create(conf->SCREEN_WIDTH,
+                         conf->SCREEN_HEIGHT,
+                         conf->pallets[6],
+                         conf->tab_name);
+
+    //Roms disponiveis
+    char *rom_path[] = {"roms/test_opcode.ch8",
+                        "roms/helloworld.rom"};
 
     //Carregando rom na memoria
     loader(rom,
            mem,
-           "roms/test_opcode.ch8");
+           rom_path[0]);
 
     //Iniciando pc
     cpu_set_pc(cpu,
                512);
 
     loop(cpu,
-         mem);
+         mem,
+         gfx);
 
     clean(cpu,
-          mem);
+          mem,
+          conf);
 
     return 0;
 }
 
-void execute(CPU cpu)
+void cycle(CPU cpu,
+           Memory mem,
+           Gfx gfx)
 {
+    static uint16_t op;
+    static Instruction instruction;
+
+    op = fetch(cpu,
+               mem);
+
+    instruction = decode(cpu,
+                         op);
+
+    execute(cpu,
+            mem,
+            gfx,
+            instruction,
+            op);
 }
 
-void decode(CPU cpu,
-            uint16_t op,
-            Memory mem,
-            Gfx gfx)
+void execute(CPU cpu,
+             Memory mem,
+             Gfx gfx,
+             Instruction instruction,
+             uint16_t op)
 {
-    uint16_t instr = (op & 0xF000);
-    printf("PC: %4x, OP: %x ", cpu_get_pc(cpu), op);
-
-    Instructions instruction = cpu_get_instruction(cpu,
-                                                   instr);
     instruction(cpu,
                 mem,
                 gfx,
@@ -88,17 +113,26 @@ void decode(CPU cpu,
     cpu_inc_pc_word(cpu);
 }
 
-uint16_t loop(CPU cpu,
-              Memory mem)
+Instruction decode(CPU cpu,
+                   uint16_t op)
 {
-    Gfx gfx = gfx_create(SCREEN_WIDTH,
-                         SCREEN_HEIGHT,
-                         tab_name);
+    uint16_t instr = (op & 0xF000);
+    printf("PC: %4x, OP: %x ", cpu_get_pc(cpu), op);
+
+    return cpu_get_instruction(cpu,
+                               op);
+}
+
+uint16_t loop(CPU cpu,
+              Memory mem,
+              Gfx gfx)
+{
 
     //The event structure that will be used
     SDL_Event event;
     bool quit = false, run = false;
     uint16_t op;
+    Instruction instruction;
 
     while (quit == false)
     {
@@ -120,12 +154,8 @@ uint16_t loop(CPU cpu,
 
         if (run)
         {
-            op = fetch(cpu,
-                       mem);
-            decode(cpu,
-                   op,
-                   mem,
-                   gfx);
+            //cycle
+            cycle(cpu, mem, gfx);
 
             //Update Screen
             gfx_flip(gfx);
@@ -163,8 +193,10 @@ void loader(ROM rom,
 }
 
 void clean(CPU cpu,
-           Memory mem)
+           Memory mem,
+           Config *cfg)
 {
     mem_destroy(mem);
     cpu_destroy(cpu);
+    cfg_destroy(cfg);
 }
