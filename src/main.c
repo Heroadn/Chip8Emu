@@ -50,7 +50,7 @@ int main(void)
     ROM rom = rom_create();
     CPU cpu = cpu_create();
     Memory mem = mem_create();
-    Config conf = cfg_create();
+    Config conf = cfg_create("config.cfg");
     Gfx gfx = gfx_create(conf->SCREEN_WIDTH,
                          conf->SCREEN_HEIGHT,
                          conf->pallets[6],
