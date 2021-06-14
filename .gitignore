@@ -1,1 +1,2 @@
 bin/extract_numbers.py
+build/*.o
