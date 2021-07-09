@@ -11,48 +11,46 @@ typedef struct gfx_type
     SDL_Surface *screen;
     int screen_width,
         screen_height,
-        bits_per_pixel;
+        bits_per_pixel,
+        i_pallet;
 
     uint8_t screen_pixels[INTERNAL_WIDTH][INTERNAL_HEIGHT],
-        colors[CHANNELS],
-        background[CHANNELS];
+        colors[NUM_PALLETS][CHANNELS],
+        background[NUM_PALLETS][CHANNELS];
 };
 
-Gfx gfx_create(int screen_width,
-               int screen_height,
-               const pallet pallets,
+static uint8_t *select_color(Gfx gfx,
+                             const int x,
+                             const int y)
+{
+    return (gfx->screen_pixels[x][y]) ? gfx->colors[gfx->i_pallet]
+                                      : gfx->background[gfx->i_pallet];
+}
+
+static bool is_bit_set(uint8_t byte,
+                       int i,
+                       int mask)
+{
+    return (byte & (mask >> i)) == true;
+}
+
+Gfx gfx_create(const int screen_width,
+               const int screen_height,
+               const int bits_per_pixel,
+               const uint8_t colors[NUM_PALLETS][CHANNELS],
+               const uint8_t background[NUM_PALLETS][CHANNELS],
                const char *filename)
 {
-    Gfx gfx = malloc(sizeof(struct gfx_type));
+    Gfx gfx = calloc(1, sizeof(struct gfx_type));
     gfx->screen_width = screen_width;
     gfx->screen_height = screen_height;
-    gfx->bits_per_pixel = 32;
+    gfx->bits_per_pixel = bits_per_pixel;
+    gfx->i_pallet = 0;
 
-    gfx->colors[0] = pallets.colors[0];
-    gfx->colors[1] = pallets.colors[1];
-    gfx->colors[2] = pallets.colors[2];
-    gfx->background[0] = pallets.background[0];
-    gfx->background[1] = pallets.background[1];
-    gfx->background[2] = pallets.background[2];
-    /*
-    gfx->colors[0] = pallet[0][0];
-    gfx->colors[1] = pallet[1][0];
-    gfx->colors[2] = pallet[2][0];
-    gfx->background[0] = pallet[0][1];
-    gfx->background[1] = pallet[1][1];
-    gfx->background[2] = pallet[2][1];
-
-    gfx->colors[0] = 43;
-    gfx->colors[1] = 83;
-    gfx->colors[2] = 41;
-    gfx->background[0] = 156;
-    gfx->background[1] = 204;
-    gfx->background[2] = 156;
-    */
-
-    memset(gfx->screen_pixels,
-           0,
-           sizeof(gfx->screen_pixels[0][0]) * INTERNAL_WIDTH * INTERNAL_HEIGHT);
+    memcpy(gfx->colors, colors,
+           NUM_PALLETS * CHANNELS * sizeof(uint8_t));
+    memcpy(gfx->background, background,
+           NUM_PALLETS * CHANNELS * sizeof(uint8_t));
 
     //Init sdl subsystems
     if (gfx_init(filename, gfx) == 0)
@@ -68,30 +66,57 @@ void gfx_draw_pixel(SDL_Rect rect,
                     uint8_t colors[CHANNELS],
                     Gfx gfx)
 {
+    uint32_t color = SDL_MapRGB(gfx->screen->format,
+                                colors[0],
+                                colors[1],
+                                colors[2]);
+
     SDL_FillRect(gfx->screen,
                  &rect,
-                 SDL_MapRGB(gfx->screen->format, colors[0], colors[1], colors[2]));
+                 color);
 }
 
-void gfx_draw_sprite(uint8_t offset_x,
+bool gfx_draw_sprite(uint8_t offset_x,
                      uint8_t offset_y,
                      uint8_t pixel_size,
                      uint8_t sprite_height,
                      uint8_t sprite[],
                      Gfx gfx)
 {
-    uint8_t mask = (1 << 7), pixel = 0;
+    uint8_t mask = (1 << 7),
+            new_pixel = 0,
+            old_pixel = 0,
+            sprite_pixel = 0,
+            x = 0,
+            y = 0;
+    bool is_modified = false;
 
     for (int i = 0; i < sprite_height; i++)
     {
-        pixel = sprite[i];
+        sprite_pixel = sprite[i];
 
         for (int j = 0; j < 8; j++)
         {
-            gfx->screen_pixels[offset_x + j][offset_y + i] =
-                ((pixel & (mask >> j))) ? 1 : 0;
+            x = (offset_x + j) % INTERNAL_WIDTH;
+            y = (offset_y + i) % INTERNAL_HEIGHT;
+
+            old_pixel = gfx->screen_pixels[x][y];
+            new_pixel = (old_pixel ^ (sprite_pixel & (mask >> j)));
+            gfx->screen_pixels[x][y] = new_pixel;
+
+            //if the pixel was activated them, mark as modified
+            if (((old_pixel == true) && (new_pixel == false)))
+                is_modified = true;
         }
     }
+
+    return is_modified;
+}
+
+void gfx_change_pallet(Gfx gfx,
+                       int i)
+{
+    gfx->i_pallet = i;
 }
 
 void gfx_apply_surface(int x,
@@ -113,11 +138,18 @@ void gfx_apply_surface(int x,
                     &offset);
 }
 
+void gfx_clear_screen(Gfx gfx)
+{
+    memset(gfx->screen_pixels,
+           0,
+           sizeof(gfx->screen_pixels[0][0]) * INTERNAL_WIDTH * INTERNAL_HEIGHT);
+    gfx_draw_screen(gfx);
+}
+
 void gfx_clean_up(Gfx gfx)
 {
-    SDL_FreeSurface(gfx->screen);
-
     //Quit SDL
+    SDL_QuitSubSystem(SDL_INIT_EVERYTHING);
     SDL_Quit();
 }
 
@@ -125,8 +157,10 @@ void gfx_draw_screen(Gfx gfx)
 {
     SDL_Rect rect = {.x = 0,
                      .y = 0,
-                     .w = INTERNAL_WIDTH * PIXEL_SIZE,
-                     .h = INTERNAL_HEIGHT * PIXEL_SIZE};
+                     .w = PIXEL_SIZE,
+                     .h = PIXEL_SIZE};
+
+    uint8_t *colors;
 
     for (int y = 0; y < INTERNAL_HEIGHT; y++)
     {
@@ -134,24 +168,15 @@ void gfx_draw_screen(Gfx gfx)
         {
             rect.x = x * PIXEL_SIZE;
             rect.y = y * PIXEL_SIZE;
-            rect.h = PIXEL_SIZE;
-            rect.w = PIXEL_SIZE;
 
-            printf("%d", gfx->screen_pixels[x][y]);
-            if (gfx->screen_pixels[x][y])
-            {
-                gfx_draw_pixel(rect,
-                               gfx->colors,
-                               gfx);
-            }
-            else
-            {
-                gfx_draw_pixel(rect,
-                               gfx->background,
-                               gfx);
-            }
+            colors = select_color(gfx,
+                                  x,
+                                  y);
+
+            gfx_draw_pixel(rect,
+                           colors,
+                           gfx);
         }
-        printf("\n");
     }
 }
 
@@ -169,7 +194,7 @@ void gfx_destroy(Gfx gfx)
     free(gfx);
 }
 
-bool gfx_init(const char *filename,
+bool gfx_init(const char *name,
               Gfx gfx)
 {
     //Start SDL
@@ -185,7 +210,7 @@ bool gfx_init(const char *filename,
                                    SDL_SWSURFACE);
 
     //Set the window caption
-    SDL_WM_SetCaption(filename, NULL);
+    SDL_WM_SetCaption(name, NULL);
 
     return true;
 }

@@ -3,7 +3,7 @@
 #ifndef FILE_H
 #define FILE_H
 
-//return the amount of chars readed
+//return the amount of chars read
 int read_line(const int n,
               FILE *fp,
               char *str);

@@ -10,7 +10,7 @@ typedef struct rom_type
     char *ptr;  
 } *ROM;
 
-ROM rom_create();
+ROM rom_create(const char *filename);
 
 void rom_read(ROM rom, const char *filename);
 

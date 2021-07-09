@@ -1,62 +1,43 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <ctype.h>
 #include <stdint.h>
+#include <stdbool.h>
 
-typedef struct cpu_type *CPU;
-typedef void (*Instruction)(CPU cpu,
-                             void *,
-                             void *,
-                             uint16_t op);
+#include "font.h"
+#include "register.h"
+#include "instructions.h"
+#include "memory.h"
+#include "rom.h"
+#include "graphics.h"
+#include "keyboard.h"
 
-CPU cpu_create();
+typedef struct
+{
+    bool *sig_halt, //signal to halt
+        *sig_exec;  //signal to cpu_execute the instruction
+} Signal;
 
-void cpu_destroy();
+#ifndef CPU_H
+#define CPU_H
 
-void cpu_inc_pc_byte(CPU cpu);
+void cpu_execute(Register cpu,
+                 Memory mem,
+                 Gfx gfx,
+                 Instruction_ptr instruction,
+                 uint16_t op,
+                 Keyboard key);
 
-void cpu_inc_pc_word(CPU cpu);
+uint16_t cpu_cycle(Register cpu,
+                   Memory mem,
+                   Gfx gfx,
+                   Keyboard key);
 
-void cpu_ld_reg(CPU cpu,
-                uint8_t src,
-                uint8_t dst);
+uint16_t cpu_fetch(Register cpu,
+                   Memory mem);
 
-void cpu_or_reg(CPU cpu,
-                uint8_t src,
-                uint8_t dst);                
+Instruction_ptr cpu_decode(Register cpu,
+                           uint16_t op);
 
-void cpu_set_pc(CPU cpu,
-                uint16_t pc);
-
-void cpu_set_reg(CPU cpu,
-                 uint8_t n,
-                 uint8_t value);
-
-void cpu_set_reg_delay(CPU cpu,
-                       uint8_t value);
-
-void cpu_set_reg_timer(CPU cpu,
-                       uint8_t value);
-
-void cpu_set_reg_I(CPU cpu,
-                   uint16_t value);
-
-Instruction *cpu_get_instruction(CPU cpu,
-                                  uint16_t instr);
-
-uint8_t cpu_get_reg(CPU cpu,
-                    uint8_t n);
-
-uint8_t cpu_get_reg_delay(CPU cpu);
-
-uint8_t cpu_get_reg_timer(CPU cpu);
-
-uint16_t cpu_get_reg_I(CPU cpu);
-
-uint16_t cpu_get_pc(CPU cpu);
-
-uint16_t cpu_get_sp(CPU cpu);
-
-uint16_t cpu_stack_pop(CPU cpu);
-
-void cpu_stack_push(CPU cpu,
-                    uint16_t value);
-
-void cpu_stack_print(CPU cpu);
+#endif /* CPU_H */

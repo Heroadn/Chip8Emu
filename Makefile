@@ -32,9 +32,12 @@ LINKER_FLAGS = -lSDL -lSDL_image -lSDL_ttf
 
 .PHONY: compile
 compile :
-	cd src/utils; make; cd ../;
-	cc -c	$(SRC)
+	cc $(COMPILER_FLAGS)  -c	$(SRC)
 
 .PHONY: build
 build : $(OBJ)
 	$(CC) $(OBJ) $(COMPILER_FLAGS) $(LINKER_FLAGS) -o $(OBJ_NAME)
+
+all:
+	compile
+	build

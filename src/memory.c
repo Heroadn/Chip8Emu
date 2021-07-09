@@ -45,25 +45,43 @@ void mem_clear(Memory mem)
 }
 
 void mem_move_rom(Memory mem,
-                  long size,
+                  const long size,
                   const uint8_t *rom)
 {
-    memcpy((mem->segment.data), rom, size);
+    memcpy((mem->segment.data),
+           rom,
+           size);
 }
 
 void mem_move_interpreter(Memory mem,
-                  long size,
-                  const uint8_t *interpreter)
+                          const long size,
+                          const uint8_t *data)
 {
     memcpy(
         (mem->segment.interpreter),
-        interpreter,
+        data,
         size);
 }
 
 void mem_destroy(Memory mem)
 {
     free(mem);
+}
+
+void mem_store_byte(Memory mem,
+                    uint16_t addrs,
+                    uint8_t value)
+{
+    mem->RAM[addrs % RAM_SIZE] = value;
+}
+
+uint8_t mem_addr_segment(Memory mem,
+                         uint8_t n_elemts,
+                         uint8_t index,
+                         uint16_t start_addr)
+{
+    start_addr += (n_elemts * index);
+    return (start_addr % RAM_SIZE);
 }
 
 uint8_t mem_load_byte(Memory mem,

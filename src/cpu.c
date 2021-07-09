@@ -1,246 +1,151 @@
-#include <stdio.h>
-#include <stdint.h>
-#include <stdlib.h>
+#include <SDL/SDL.h>
+#include <SDL/SDL_ttf.h>
+#include <SDL/SDL_image.h>
+#include <time.h>
 #include "cpu.h"
-#include "instructions.h"
 
 typedef struct cpu_type
 {
-    //architecture
-    uint8_t v[15], delay, timer;
-    uint16_t stack[16], pc, sp, i;;
-};
 
-CPU cpu_create()
-{
-    CPU cpu = malloc(sizeof(struct cpu_type));
-    cpu->sp = 0;
-    return cpu;
-}
+} CPU;
 
-Instruction *const cpu_get_instruction(CPU cpu,
-                                        uint16_t op)
+CPU cpu;
+
+Instruction_ptr cpu_decode(Register reg,
+                           uint16_t op)
 {
+    printf("PC: %4x, OP: %x ", reg_get_pc(reg), op);
+
     switch (op & 0xF000)
     {
     case 0x1000:
-        return _1nnn;
-        break;
+        return ins_1nnn;
     case 0x2000:
-        return _2nnn;
-        break;
+        return ins_2nnn;
     case 0x3000:
-        return _3xkk;
-        break;
+        return ins_3xkk;
     case 0x4000:
-        return _4xkk;
-        break;
+        return ins_4xkk;
     case 0x5000:
-        return _5xy0;
-        break;
+        return ins_5xy0;
     case 0x6000:
-        return _6xkk;
-        break;
+        return ins_6xkk;
     case 0x7000:
-        return _7xkk;
-        break;
+        return ins_7xkk;
     case 0x9000:
-        return _9xy0;
-        break;
+        return ins_9xy0;
+    case 0xC000:
+        return ins_cxkk;
     case 0xD000:
-        return _dxyn;
-        break;
+        return ins_dxyn;
     case 0xA000:
-        return _annn;
-        break;
+        return ins_annn;
     default:
-
         switch (op & 0xF0FF)
         {
         case 0x0000:
-            return nop;
-            break;
+            return ins_nop;
         case 0x00E0:
-            return not_implmented;
-            break;
+            return ins_00e0;
         case 0x00EE:
-            return _00ee;
-            break;
+            return ins_00ee;
+        case 0xE09E:
+            return ins_ex9e;
+        case 0xE0A1:
+            return ins_exa1;
         }
 
         switch (op & 0xF00F)
         {
         case 0x8000:
-            return _8xy0;
-            break;
+            return ins_8xy0;
         case 0x8001:
-            return _8xy1;
-            break;
+            return ins_8xy1;
         case 0x8002:
-            return not_implmented;
-            break;
+            return ins_8xy2;
         case 0x8003:
-            return not_implmented;
-            break;
+            return ins_8xy3;
         case 0x8004:
-            return not_implmented;
-            break;
+            return ins_8xy4;
         case 0x8005:
-            return not_implmented;
-            break;
+            return ins_8xy5;
         case 0x8006:
-            return not_implmented;
-            break;
+            return ins_8xy6;
         case 0x8007:
-            return not_implmented;
-            break;
+            return ins_8xy7;
         case 0x800E:
-            return not_implmented;
-            break;
+            return ins_8xye;
         }
 
         switch (op & 0xF0FF)
         {
         case 0xF007:
-            return not_implmented;
-            break;
+            return ins_fx07;
         case 0xF00A:
-            return not_implmented;
-            break;
+            return ins_fx0a;
         case 0xF015:
-            return not_implmented;
-            break;
+            return ins_fx15;
         case 0xF018:
-            return not_implmented;
-            break;
+            return ins_fx18;
         case 0xF01E:
-            return not_implmented;
-            break;
+            return ins_fx1e;
         case 0xF029:
-            return not_implmented;
-            break;
+            return ins_fx29;
         case 0xF033:
-            return not_implmented;
-            break;
+            return ins_fx33;
         case 0xF055:
-            return not_implmented;
-            break;
+            return ins_fx55;
         case 0xF065:
-            return not_implmented;
-            break;
+            return ins_fx65;
         }
 
-        return not_implmented;
+        return ins_not_implmented;
     }
 }
 
-void cpu_destroy(CPU cpu)
+void cpu_execute(Register reg,
+                 Memory mem,
+                 Gfx gfx,
+                 Instruction_ptr ins,
+                 uint16_t op,
+                 Keyboard key)
 {
-    free(cpu);
+    ins(reg,
+        mem,
+        gfx,
+        key,
+        op);
+
+    reg_inc_pc(reg);
 }
 
-void cpu_inc_pc_byte(CPU cpu)
+uint16_t cpu_fetch(Register cpu,
+                   Memory mem)
 {
-    cpu_set_pc(cpu, cpu_get_pc(cpu) + 1);
+    return mem_load_word(mem,
+                         reg_get_pc(cpu));
 }
 
-void cpu_inc_pc_word(CPU cpu)
+uint16_t cpu_cycle(Register reg,
+                   Memory mem,
+                   Gfx gfx,
+                   Keyboard key)
 {
-    cpu_set_pc(cpu, cpu_get_pc(cpu) + 2);
-}
+    static Instruction_ptr ins;
+    static uint16_t op;
 
-void cpu_or_reg(CPU cpu,
-                uint8_t src,
-                uint8_t dst)
-{
-    cpu_set_reg(cpu, dst, cpu_get_reg(cpu, src) | cpu_get_reg(cpu, dst));
-}
+    op = cpu_fetch(reg,
+                   mem);
 
-void cpu_ld_reg(CPU cpu,
-                uint8_t src,
-                uint8_t dst
-                )
-{
-    cpu_set_reg(cpu, dst, cpu_get_reg(cpu, src));
-}
+    ins = cpu_decode(reg,
+                     op);
 
-void cpu_set_pc(CPU cpu,
-                uint16_t pc)
-{
-    cpu->pc = pc;
-}
+    cpu_execute(reg,
+                mem,
+                gfx,
+                ins,
+                op,
+                key);
 
-void cpu_set_reg(CPU cpu,
-                 uint8_t n,
-                 uint8_t value)
-{
-    cpu->v[n] = value;
-}
-
-void cpu_set_reg_I(CPU cpu,
-                   uint16_t value)
-{
-    cpu->i = value;
-}
-
-void cpu_set_reg_delay(CPU cpu,
-                       uint8_t value)
-{
-    cpu->delay = value;
-}
-
-void cpu_set_reg_timer(CPU cpu,
-                       uint8_t value)
-{
-    cpu->timer = value;
-}
-
-uint8_t cpu_get_reg_delay(CPU cpu)
-{
-    return cpu->delay;
-}
-
-uint8_t cpu_get_reg_timer(CPU cpu)
-{
-    return cpu->timer;
-}
-
-uint8_t cpu_get_reg(CPU cpu,
-                    uint8_t n)
-{
-    return cpu->v[n];
-}
-
-uint16_t cpu_get_reg_I(CPU cpu)
-{
-    return cpu->i;
-}
-
-uint16_t cpu_get_pc(CPU cpu)
-{
-    return cpu->pc;
-}
-
-uint16_t cpu_get_sp(CPU cpu)
-{
-    return cpu->sp;
-}
-
-uint16_t cpu_stack_pop(CPU cpu)
-{
-    return cpu->stack[--cpu->sp];
-}
-
-void cpu_stack_push(CPU cpu,
-                    uint16_t value)
-{
-    cpu->stack[cpu->sp++] = value;
-}
-
-void cpu_stack_print(CPU cpu)
-{
-    for (int i = 0; i < 16; i++)
-    {
-        printf("    %2d: %x\n", i, cpu->stack[i]);
-    }
+    return op;
 }
