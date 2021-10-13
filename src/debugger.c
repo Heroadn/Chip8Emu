@@ -5,8 +5,7 @@
 
 typedef struct debugger_type
 {
-    Instruction_info history[INSTRUCTIONS_SIZE];
-    int index;
+    Instruction_log instruction_log;
 };
 
 typedef enum
@@ -46,181 +45,160 @@ typedef enum
     ID_Fx55,
     ID_Fx65,
     ID_NOP,
-    ID_NIMP
+    ID_NIMP,
+    SIZE_ID_INS
 } ID_instruction;
 
-Instruction_info instruction_info[] = {
-    [ID_00E0] = {//[0] 0x00E0
+Instruction_log instruction_info[] = {
+    [ID_00E0] = {//0x00E0
                  .menemonic = MNE_CLS,
-                 .operands.args_mask = {0, 0},
-                 .operands.arg_type = {ARG_NULL, ARG_NULL},
-                 },
-    [ID_00EE] = {//[1] 0x00EE
+                 .operands[0] = {.addr = ADDR_NULL, .mask = 0},
+                 .operands[1] = {.addr = ADDR_NULL, .mask = 0}},
+    [ID_00EE] = {//0x00E0
                  .menemonic = MNE_RET,
-                 .operands.args_mask = {0, 0},
-                 .operands.arg_type = {ARG_NULL, ARG_NULL}},
-    [ID_1nnn] = {//[2] 0x1nnn
+                 .operands[0] = {.addr = ADDR_NULL, .mask = 0},
+                 .operands[1] = {.addr = ADDR_NULL, .mask = 0}},
+    [ID_1nnn] = {//0x1nnn
                  .menemonic = MNE_JP,
-                 .operands.args_mask = {0, 0},
-                 .operands.arg_type = {ARG_ADDR, ARG_NULL}},
-    [ID_2nnn] = {//[3] 0x2nnn
+                 .operands[0] = {.addr = ADDR_ABS, .mask = 0x0FFF},
+                 .operands[1] = {.addr = ADDR_NULL, .mask = 0}},
+    [ID_2nnn] = {//0x2nnn
                  .menemonic = MNE_CALL,
-                 .operands.args_mask = {0, 0xFFF},
-                 .operands.arg_type = {ARG_NULL, ARG_ADDR}},
-    [ID_3xkk] = {//[4] 0x3xkk
+                 .operands[0] = {.addr = ADDR_NULL, .mask = 0},
+                 .operands[1] = {.addr = ADDR_ABS, .mask = 0xFFF}},
+    [ID_3xkk] = {//0x3xkk
                  .menemonic = MNE_SE,
-                 .operands.args_mask = {0x0F00, 0x00FF},
-                 .operands.arg_type = {ARG_REG, ARG_ADDR}},
-    [ID_4xkk] = {//[5] 0x4xkk
+                 .operands[0] = {.addr = ADDR_REG, .mask = 0x0F00},
+                 .operands[1] = {.addr = ADDR_ABS, .mask = 0x00FF}},
+    [ID_4xkk] = {//0x4xkk
                  .menemonic = MNE_SNE,
-                 .operands.args_mask = {0x0F00, 0x00FF},
-                 .operands.arg_type = {ARG_REG, ARG_ADDR}},
-    [ID_5xy0] = {//[6] 0x5xy0
+                 .operands[0] = {.addr = ADDR_REG, .mask = 0x0F00},
+                 .operands[1] = {.addr = ADDR_ABS, .mask = 0x00FF}},
+    [ID_5xy0] = {//0x5xy0
                  .menemonic = MNE_SE,
-                 .operands.args_mask = {0xF00, 0x00F0},
-                 .operands.arg_type = {ARG_REG, ARG_REG}},
-    [ID_6xkk] = {//[7] 0x6xkk
+                 .operands[0] = {.addr = ADDR_REG, .mask = 0x0F00},
+                 .operands[1] = {.addr = ADDR_REG, .mask = 0x00F0}},
+    [ID_6xkk] = {//0x6xkk
                  .menemonic = MNE_LD,
-                 .operands.args_mask = {0x0F00, 0x00FF},
-                 .operands.arg_type = {ARG_REG, ARG_ADDR}},
-    [ID_7xkk] = {//[8] 0x7xkk
+                 .operands[0] = {.addr = ADDR_REG, .mask = 0x0F00},
+                 .operands[1] = {.addr = ADDR_ABS, .mask = 0x00FF}},
+    [ID_7xkk] = {//0x7xkk
                  .menemonic = MNE_ADD,
-                 .operands.args_mask = {0x0F00, 0x00FF},
-                 .operands.arg_type = {ARG_REG, ARG_ADDR}},
-    [ID_8xy0] = {//[9] 0x8xy0
+                 .operands[0] = {.addr = ADDR_REG, .mask = 0x0F00},
+                 .operands[1] = {.addr = ADDR_ABS, .mask = 0x00FF}},
+    [ID_8xy0] = {//0x8xy0
                  .menemonic = MNE_LD,
-                 .operands.args_mask = {0, 0},
-                 .operands.arg_type = ARG_REG,
-                 .operands.arg_type = ARG_REG},
-    [ID_8xy0] = {//[10] 0x8xy1
+                 .operands[0] = {.addr = ADDR_REG, .mask = 0x0F00},
+                 .operands[1] = {.addr = ADDR_REG, .mask = 0x00F0}},
+    [ID_8xy0] = {//0x8xy1
                  .menemonic = MNE_OR,
-                 .operands.args_mask = {0, 0},
-                 .operands.arg_type = ARG_REG,
-                 .operands.arg_type = ARG_REG},
-    [ID_8xy1] = {//[11] 0x8xy2
+                 .operands[0] = {.addr = ADDR_REG, .mask = 0x0F00},
+                 .operands[1] = {.addr = ADDR_REG, .mask = 0x00F0}},
+    [ID_8xy1] = {//0x8xy2
                  .menemonic = MNE_AND,
-                 .operands.args_mask = {0, 0},
-                 .operands.arg_type = ARG_REG,
-                 .operands.arg_type = ARG_REG},
-    [ID_8xy2] = {//[12] 0x8xy3
+                 .operands[0] = {.addr = ADDR_REG, .mask = 0x0F00},
+                 .operands[1] = {.addr = ADDR_REG, .mask = 0x00F0}},
+    [ID_8xy2] = {//0x8xy3
                  .menemonic = MNE_XOR,
-                 .operands.args_mask = {0, 0},
-                 .operands.arg_type = ARG_REG,
-                 .operands.arg_type = ARG_REG},
-    [ID_8xy3] = {//[13] 0x8xy4
+                 .operands[0] = {.addr = ADDR_REG, .mask = 0x0F00},
+                 .operands[1] = {.addr = ADDR_REG, .mask = 0x00F0}},
+    [ID_8xy3] = {//0x8xy4
                  .menemonic = MNE_ADD,
-                 .operands.args_mask = {0, 0},
-                 .operands.arg_type = ARG_REG,
-                 .operands.arg_type = ARG_REG},
-    [ID_8xy4] = {//[14] 0x8xy5
+                 .operands[0] = {.addr = ADDR_REG, .mask = 0x0F00},
+                 .operands[1] = {.addr = ADDR_REG, .mask = 0x00F0}},
+    [ID_8xy4] = {//0x8xy5
                  .menemonic = MNE_SUB,
-                 .operands.args_mask = {0, 0},
-                 .operands.arg_type = ARG_REG,
-                 .operands.arg_type = ARG_REG},
-    [ID_8xy5] = {//[15] 0x8xy6
+                 .operands[0] = {.addr = ADDR_REG, .mask = 0x0F00},
+                 .operands[1] = {.addr = ADDR_REG, .mask = 0x00F0}},
+    [ID_8xy5] = {//0x8xy6
                  .menemonic = MNE_SHR,
-                 .operands.args_mask = {0, 0},
-                 .operands.arg_type = ARG_REG,
-                 .operands.arg_type = ARG_REG},
-    [ID_8xy6] = {//[16] 0x8xy7
+                 .operands[0] = {.addr = ADDR_REG, .mask = 0x0F00},
+                 .operands[1] = {.addr = ADDR_REG, .mask = 0x00F0}},
+    [ID_8xy6] = {//0x8xy7
                  .menemonic = MNE_SUBN,
-                 .operands.args_mask = {0, 0},
-                 .operands.arg_type = ARG_REG,
-                 .operands.arg_type = ARG_REG},
-    [ID_8xy7] = {//[17] 0x8xyE
+                 .operands[0] = {.addr = ADDR_REG, .mask = 0x0F00},
+                 .operands[1] = {.addr = ADDR_REG, .mask = 0x00F0}},
+    [ID_8xyE] = {//0x8xyE
                  .menemonic = MNE_SHL,
-                 .operands.args_mask = {0, 0},
-                 .operands.arg_type = ARG_REG,
-                 .operands.arg_type = ARG_REG},
-    [ID_9xy0] = {//[18] 0x9xy0
+                 .operands[0] = {.addr = ADDR_REG, .mask = 0x0F00},
+                 .operands[1] = {.addr = ADDR_REG, .mask = 0x00F0}},
+    [ID_8xy7] = {//0x8xy7
+                 .menemonic = MNE_SHL,
+                 .operands[0] = {.addr = ADDR_REG, .mask = 0x0F00},
+                 .operands[1] = {.addr = ADDR_REG, .mask = 0x00F0}},
+    [ID_9xy0] = {//0x9xy0
                  .menemonic = MNE_SNE,
-                 .operands.args_mask = {0, 0},
-                 .operands.arg_type = ARG_REG,
-                 .operands.arg_type = ARG_REG},
-    [ID_Annn] = {//[19] 0xAnnn
+                 .operands[0] = {.addr = ADDR_REG, .mask = 0x0F00},
+                 .operands[1] = {.addr = ADDR_REG, .mask = 0x00F0}},
+    [ID_Annn] = {//0xAnnn
                  .menemonic = MNE_LD,
-                 .operands.args_mask = {0, 0x0FFF},
-                 .operands.arg_type = {ARG_REG_I, ARG_ADDR}},
-    [ID_Bnnn] = {//[20] 0xBnnn
+                 .operands[0] = {.addr = ADDR_REG_I, .mask = 0x0},
+                 .operands[1] = {.addr = ADDR_ABS, .mask = 0x0FFF}},
+    [ID_Bnnn] = {//0xBnnn
                  .menemonic = MNE_JP,
-                 .operands.args_mask = {0, 0},
-                 .operands.arg_type = ARG_REG,
-                 .operands.arg_type = ARG_ADDR},
-    [ID_Cxkk] = {//[21] 0xCxkk
+                 .operands[0] = {.addr = ADDR_REG, .mask = 0x0},
+                 .operands[1] = {.addr = ADDR_ABS, .mask = 0x0FFF}},
+    [ID_Cxkk] = {//0xCxkk
                  .menemonic = MNE_RND,
-                 .operands.args_mask = {0, 0},
-                 .operands.arg_type = ARG_REG,
-                 .operands.arg_type = ARG_ADDR},
-    [ID_Dxyn] = {//[22] 0xDxyn
+                 .operands[0] = {.addr = ADDR_REG, .mask = 0x0},
+                 .operands[1] = {.addr = ADDR_ABS, .mask = 0x0}},
+    [ID_Dxyn] = {//0xDxyn
                  .menemonic = MNE_DRW,
-                 .operands.args_mask = {0, 0},
-                 .operands.arg_type = ARG_REG,
-                 .operands.arg_type = ARG_REG},
-    [ID_Ex9E] = {//[23] 0xEx9E
+                 .operands[0] = {.addr = ADDR_REG, .mask = 0x0F00},
+                 .operands[1] = {.addr = ADDR_REG, .mask = 0x00F0},
+                 .operands[2] = {.addr = ADDR_ABS, .mask = 0x000F}},
+    [ID_Ex9E] = {//0xEx9E
                  .menemonic = MNE_SKP,
-                 .operands.args_mask = {0, 0},
-                 .operands.arg_type = ARG_REG,
-                 .operands.arg_type = ARG_NULL},
-    [ID_ExA1] = {//[24] 0xExA1
+                 .operands[0] = {.addr = ADDR_REG, .mask = 0x0},
+                 .operands[1] = {.addr = ADDR_NULL, .mask = 0x0}},
+    [ID_ExA1] = {//0xExA1
                  .menemonic = MNE_SKNP,
-                 .operands.args_mask = {0, 0},
-                 .operands.arg_type = ARG_REG,
-                 .operands.arg_type = ARG_NULL},
-    [ID_Fx07] = {//[25] 0xFx07
+                 .operands[0] = {.addr = ADDR_REG, .mask = 0x0},
+                 .operands[1] = {.addr = ADDR_NULL, .mask = 0x0}},
+    [ID_Fx07] = {//0xFx07
                  .menemonic = MNE_LD,
-                 .operands.args_mask = {0, 0},
-                 .operands.arg_type = ARG_REG,
-                 .operands.arg_type = ARG_ADDR},
-    [ID_Fx0A] = {//[26] 0xFx0A
+                 .operands[0] = {.addr = ADDR_REG, .mask = 0x0},
+                 .operands[1] = {.addr = ADDR_ABS, .mask = 0x0}},
+    [ID_Fx0A] = {//0xFx0A
                  .menemonic = MNE_LD,
-                 .operands.args_mask = {0, 0},
-                 .operands.arg_type = ARG_REG,
-                 .operands.arg_type = ARG_DATA},
-    [ID_Fx15] = {//[27] 0xFx15
+                 .operands[0] = {.addr = ADDR_REG, .mask = 0x0},
+                 .operands[1] = {.addr = ADDR_ABS, .mask = 0x0}},
+    [ID_Fx15] = {//0xFx15
                  .menemonic = MNE_LD,
-                 .operands.args_mask = {0, 0},
-                 .operands.arg_type = ARG_REG,
-                 .operands.arg_type = ARG_REG},
-    [ID_Fx18] = {//[28] 0xFx18
+                 .operands[0] = {.addr = ADDR_REG, .mask = 0x0},
+                 .operands[1] = {.addr = ADDR_REG, .mask = 0x0}},
+    [ID_Fx18] = {//0xFx18
                  .menemonic = MNE_LD,
-                 .operands.args_mask = {0, 0},
-                 .operands.arg_type = ARG_REG,
-                 .operands.arg_type = ARG_REG},
-    [ID_Fx1E] = {//[29] 0xFx1E
+                 .operands[0] = {.addr = ADDR_REG, .mask = 0x0},
+                 .operands[1] = {.addr = ADDR_REG, .mask = 0x0}},
+    [ID_Fx1E] = {//0xFx1E
                  .menemonic = MNE_ADD,
-                 .operands.args_mask = {0, 0},
-                 .operands.arg_type = ARG_REG,
-                 .operands.arg_type = ARG_REG},
-    [ID_Fx29] = {//[30] 0xFx29
+                 .operands[0] = {.addr = ADDR_REG, .mask = 0x0},
+                 .operands[1] = {.addr = ADDR_REG, .mask = 0x0}},
+    [ID_Fx29] = {//0xFx29
                  .menemonic = MNE_LD,
-                 .operands.args_mask = {0, 0},
-                 .operands.arg_type = ARG_ADDR,
-                 .operands.arg_type = ARG_REG},
-    [ID_Fx33] = {//[31] 0xFx33
+                 .operands[0] = {.addr = ADDR_ABS, .mask = 0x0},
+                 .operands[1] = {.addr = ADDR_REG, .mask = 0x0}},
+    [ID_Fx33] = {//0xFx33
                  .menemonic = MNE_LD,
-                 .operands.args_mask = {0, 0},
-                 .operands.arg_type = ARG_ADDR,
-                 .operands.arg_type = ARG_REG},
-    [ID_Fx55] = {//[32] 0xFx55
+                 .operands[0] = {.addr = ADDR_REG, .mask = 0x0F00},
+                 .operands[1] = {.addr = ADDR_REG_I, .mask = 0x0}},
+    [ID_Fx55] = {//0xFx55
                  .menemonic = MNE_LD,
-                 .operands.args_mask = {0, 0},
-                 .operands.arg_type = ARG_ADDR,
-                 .operands.arg_type = ARG_REG},
-    [ID_Fx65] = {//[33] 0xFx65
+                 .operands[0] = {.addr = ADDR_REG_I_ARR, .mask = 0x0},
+                 .operands[1] = {.addr = ADDR_REG, .mask = 0x0F00}},
+    [ID_Fx65] = {//0xFx65
                  .menemonic = MNE_LD,
-                 .operands.args_mask = {0, 0},
-                 .operands.arg_type = ARG_ADDR,
-                 .operands.arg_type = ARG_REG},
-    [ID_NOP] = {//[34] Do nothing
+                 .operands[0] = {.addr = ADDR_REG, .mask = 0x0F00},
+                 .operands[1] = {.addr = ADDR_REG_I_ARR, .mask = 0x0}},
+    [ID_NOP] = {//Do nothing
                 .menemonic = MNE_NOP,
-                .operands.args_mask = {0, 0},
-                .operands.arg_type = ARG_NULL,
-                .operands.arg_type = ARG_NULL},
-    [ID_NIMP] = {//[35] Not implemented
+                .operands[0] = {.addr = ADDR_NULL, .mask = 0x0},
+                .operands[1] = {.addr = ADDR_NULL, .mask = 0x0}},
+    [ID_NIMP] = {//Not implemented
                  .menemonic = MNE_NIMP,
-                 .operands.args_mask = {0, 0},
-                 .operands.arg_type = ARG_NULL,
-                 .operands.arg_type = ARG_NULL}};
+                 .operands[0] = {.addr = ADDR_NULL, .mask = 0x0},
+                 .operands[1] = {.addr = ADDR_NULL, .mask = 0x0}}};
 
 static uint16_t remove_nimble_zeros(uint16_t operands)
 {
@@ -230,8 +208,32 @@ static uint16_t remove_nimble_zeros(uint16_t operands)
     return operands;
 };
 
-//print the instruction
-static void print_intruction(Instruction_info info)
+static void print_type_instruction(Instruction_log info)
+{
+    //Type of operation done by the instruction
+    static const char *op_type[] =
+        {
+            [MNE_CLS] = " ",
+            [MNE_LD] = ",",
+            [MNE_AND] = " &",
+            [MNE_OR] = " |",
+            [MNE_CALL] = "<-",
+            [MNE_RET] = "->",
+            [MNE_SNE] = " !=",
+            [MNE_SE] = " ==",
+            [MNE_DRW] = ",",
+            [MNE_ADD] = " +",
+            [MNE_XOR] = " ^",
+            [MNE_OR] = " |",
+            [MNE_SUB] = " -",
+            [MNE_SHR] = " >>",
+            [MNE_SHL] = " <<",
+            [MNE_SUBN] = " -"};
+
+    printf("%s ", op_type[info.menemonic]);
+}
+
+static void print_menemonic(Instruction_log info)
 {
     //Enum of menemonics to str
     static const char *menemonics[] =
@@ -248,44 +250,69 @@ static void print_intruction(Instruction_info info)
             "SKP", "SKNP",
             "ADD", "NOP",
             "NIMP"};
+    printf("%s ", menemonics[info.menemonic]);
+}
 
-    //
+static void print_addressing(uint16_t opcode,
+                             struct Operand operand)
+{
     static const char *arg_name[] =
         {
-            [ARG_REG] = "V",
-            [ARG_ADDR] = "",
-            [ARG_NULL] = "",
-            [ARG_DATA] = "",
-            [ARG_REG_I] = "Vi"};
+            [ADDR_REG] = "V",
+            [ADDR_ABS] = "#",
+            [ADDR_NULL] = "",
+            [ADDR_REG_I] = "Vi",
+            [ADDR_REG_I_ARR] = "[I]"};
 
-    //Type of operation done by the instruction
-    static const char *type_op[] =
-        {
-            [MNE_CLS] = "",
-            [MNE_LD] = "=",
-            [MNE_AND] = "&",
-            [MNE_OR] = "|",
-            [MNE_CALL] = "<-",
-            [MNE_RET] = "->",
-            [MNE_SNE] = "!=",
-            [MNE_SE] = "=="};
+    printf("%s", arg_name[operand.addr]);
+}
 
+static void print_operand(uint16_t opcode,
+                          struct Operand operand)
+{
+    if (operand.addr == ADDR_REG || operand.addr == ADDR_ABS)
+        printf("%x", remove_nimble_zeros(opcode & operand.mask));
+}
+
+//print the instruction
+static void print_intruction(Instruction_log info)
+{
     //menemonic
-    printf("%s ", menemonics[info.menemonic]);
-        
-    //Reg or Addres
-    printf("%s", arg_name[info.operands[0].arg_type]);
+    print_menemonic(info);
 
-    //If index of general register
-    if (info.operands[0].arg_type == ARG_REG)
-        printf("%x", remove_nimble_zeros(info.opcode & info.operands[0].args_mask));
+    //Addresing addr and operand
+    if (info.operands[0].addr != ADDR_NULL)
+    {
+        print_addressing(info.opcode,
+                         info.operands[0]);
+        print_operand(info.opcode,
+                      info.operands[0]);
+    }
 
-    //Symbol of operation done
-    printf(" %s ", type_op[info.menemonic]);
+    //Addresing addr and operand
+    if (info.operands[1].addr != ADDR_NULL)
+    {
+        //Symbol of operation done
+        print_type_instruction(info);
 
-    //Second operands
-    if (info.operands[1].arg_type != ARG_NULL)
-        printf("%x", (info.opcode & info.operands[1].args_mask));
+        print_addressing(info.opcode,
+                         info.operands[1]);
+        print_operand(info.opcode,
+                      info.operands[1]);
+    }
+
+    //Addresing addr and operand
+    if (info.operands[2].addr != ADDR_NULL)
+    {
+        //Symbol of operation done
+        print_type_instruction(info);
+
+        print_addressing(info.opcode,
+                         info.operands[2]);
+        print_operand(info.opcode,
+                      info.operands[2]);
+    }
+
     printf("\n");
 }
 
@@ -382,7 +409,6 @@ static uint16_t dissasembler(uint16_t op)
 Debugger debug_create()
 {
     Debugger debug = malloc(sizeof(struct debugger_type));
-    debug->index = 0;
     return debug;
 }
 
@@ -391,34 +417,16 @@ void debug_destroy(Debugger debug)
     free(debug);
 }
 
+void debug_print(Debugger debug)
+{
+    Instruction_log info = debug->instruction_log;
+    print_intruction(info);
+}
+
 void debug_add_instruction(Debugger debug,
                            uint16_t opcode)
 {
-    Instruction_info info = instruction_info[dissasembler(opcode)];
+    Instruction_log info = instruction_info[dissasembler(opcode)];
     info.opcode = opcode;
-
-    debug->history[debug->index % INSTRUCTIONS_SIZE] = info;
-    debug->index++;
-}
-
-void debug_print_last(Debugger debug)
-{
-    if (debug->index > 0)
-    {
-        Instruction_info info = debug->history[debug->index - 1];
-        print_intruction(info);
-    }
-    else
-    {
-        printf("NO INSTRUCTIONS STORED, NULL INDEX");
-    }
-}
-
-void debug_print_all_instructions()
-{
-
-    for (int i = 0; i < INSTRUCTIONS_SIZE; i++)
-    {
-        //printf("%s\n", menemonics[history[i].add_info->menemonic]);
-    }
+    debug->instruction_log = info;
 }

@@ -1,36 +1,4 @@
 #include "main.h"
-#include "debugger.h"
-
-void debug_cycle(Register cpu,
-                 Memory mem,
-                 Gfx gfx,
-                 Keyboard key)
-{
-    Debugger debug = debug_create();
-    uint16_t n = 6, ops[] = {
-                        0xa2cc, 0x2123,
-                        0x00E0, 0x00EE,
-                        0x1000, 0x2000,
-                        0x3000, 0x4000,
-                        0x5000, 0x6a06,
-                        0x7342, 0x8120
-                        };
-
-    for (int i = 0, op = 0; i < n; i++)
-    {
-        op = cpu_cycle(cpu,
-                       mem,
-                       gfx,
-                       key);
-
-        debug_add_instruction(debug,
-                              op);
-
-        debug_print_last(debug);
-    }
-
-    debug_destroy(debug);
-}
 
 int main(void)
 {
@@ -47,6 +15,7 @@ int main(void)
               colors,
               background);
 
+    Debugger deb = debug_create();
     Register cpu = reg_create();
     Memory mem = mem_create();
     Keyboard key = key_create();
@@ -77,21 +46,18 @@ int main(void)
     reg_set_pc(cpu,
                MEM_INIT_PC_ADDR);
 
-    /*
     loop(cpu,
          mem,
          gfx,
-         key);*/
-    debug_cycle(cpu,
-                mem,
-                gfx,
-                key);
+         key,
+         deb);
 
     clean(cpu,
           mem,
           gfx,
           cfg,
-          key);
+          key,
+          deb);
 
     return 0;
 }
@@ -140,7 +106,8 @@ void clean(Register cpu,
            Memory mem,
            Gfx gfx,
            Config *cfg,
-           Keyboard key)
+           Keyboard key,
+           Debugger deb)
 {
     gfx_clean_up(gfx);
     gfx_destroy(gfx);
@@ -148,6 +115,7 @@ void clean(Register cpu,
     reg_destroy(cpu);
     cfg_destroy(cfg);
     key_destroy(key);
+    debug_destroy(deb);
 }
 
 void loader(ROM rom,
@@ -171,7 +139,8 @@ void loader(ROM rom,
 void loop(Register cpu,
           Memory mem,
           Gfx gfx,
-          Keyboard key)
+          Keyboard key,
+          Debugger deb)
 {
     SDL_Event event;             //The event structure that will be used
     Instruction_ptr instruction; //Class resposible for current exec intructions
@@ -184,6 +153,7 @@ void loop(Register cpu,
              now = 0,
              delay = 0,
              ticks_per_sec = 1000 / TICK;
+    uint16_t op;
 
     while (sig.sig_halt == false)
     {
@@ -194,10 +164,17 @@ void loop(Register cpu,
         if (sig.sig_exec)
         {
             //cpu_cycle
-            cpu_cycle(cpu,
-                      mem,
-                      gfx,
-                      key);
+            op = cpu_cycle(cpu,
+                           mem,
+                           gfx,
+                           key);
+
+            //debugger
+            debug_add_instruction(deb,
+                                  op);
+
+            debug_print(deb);
+
             //Update Screen
             gfx_flip(gfx);
         }

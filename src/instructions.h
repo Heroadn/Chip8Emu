@@ -4,6 +4,9 @@
 #include "graphics.h"
 #include "keyboard.h"
 
+//#define ins_get_group(op, instructions) (instructions[((op) & 0xF000) >> 12])
+//#define ins_get_instruction(op) ins_get_group(op).group[((v) & ins_get_group(op))].mask];
+
 #ifndef INSTRUCTION_H
 #define INSTRUCTION_H
 
@@ -12,6 +15,14 @@ typedef void (*Instruction_ptr)(void *,
                                 void *,
                                 void *,
                                 uint16_t op);
+
+/*Map a group of instructions_group to a mask 
+like a 2d array indexer*/
+typedef struct instruction_type
+{
+    Instruction_ptr *group;
+    uint16_t mask;
+} Instruction;
 
 //0x!000
 void ins_not_implmented(Register cpu,

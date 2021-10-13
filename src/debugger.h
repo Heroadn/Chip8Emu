@@ -6,15 +6,15 @@ typedef struct debugger_type *Debugger;
 
 typedef enum
 {
-    ARG_ADDR,
-    ARG_REG,
-    ARG_DATA,
-    ARG_NULL,
-
-    ARG_REG_I,
-    ARG_REG_SOUND,
-    ARG_REG_TIMER,
-    ARG_ADDR_ARR,
+    ADDR_NULL,//no values
+    ADDR_ABS, //literal/immediate
+    ADDR_REG, //register
+    
+    //Specific
+    ADDR_REG_I,
+    ADDR_REG_I_ARR,
+    ADDR_REG_SOUND,
+    ADDR_REG_TIMER,
     SIZE_ARGS
 } Addr_mode;
 
@@ -45,24 +45,22 @@ typedef enum
     SIZE_MNE
 } Menemonic_type;
 
-typedef struct instruction_debug
+typedef struct instruction_log_type
 {
     uint16_t opcode;
     Menemonic_type menemonic;
     struct Operand
     {
-        uint16_t args_mask;
-        Addr_mode arg_type;//trocar para modo de endereçamento addr_mode, reg_mode
-    } operands[2];
-} Instruction_info;
-
-Instruction_info teste = {.operands = {.arg_type = ARG_ADDR, .arg_mask = 0}};
+        uint16_t mask;
+        Addr_mode addr;//trocar para modo de endereçamento addr_mode, reg_mode
+    } operands[3];
+} Instruction_log;
 
 Debugger debug_create();
 
 void debug_destroy(Debugger debug);
 
-void debug_print_last(Debugger debug);
+void debug_print(Debugger debug);
 
 void debug_add_instruction(Debugger debug,
                            uint16_t opcode);

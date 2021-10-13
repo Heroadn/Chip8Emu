@@ -45,7 +45,7 @@ void mem_store_byte(Memory mem,
                     uint16_t addrs,
                     uint8_t value);
 
-uint8_t mem_addr_segment(Memory mem,
+uint8_t mem_load_segment(Memory mem,
                          uint8_t n_elemts,
                          uint8_t index,
                          uint16_t start_addr);

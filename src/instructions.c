@@ -30,7 +30,7 @@ void ins_00e0(Register reg,
               Keyboard key,
               uint16_t op)
 {
-    printf("CLR SCREEN\n");
+    //printf("CLR SCREEN\n");
     gfx_clear_screen(gfx);
 }
 
@@ -40,11 +40,11 @@ void ins_00ee(Register reg,
               Keyboard key,
               uint16_t op)
 {
-    printf("RET %x\n",
-           reg_get_byte(reg, REG_BYTE_STACK));
+    //printf("RET %x\n",
+    //       reg_get_byte(reg, REG_BYTE_STACK));
     reg_set_pc(reg,
                reg_stack_pop(reg));
-    reg_stack_print(reg);
+    //reg_stack_print(reg);
 }
 
 void ins_1nnn(Register reg,
@@ -58,7 +58,7 @@ void ins_1nnn(Register reg,
     reg_set_pc(reg,
                reg_get_pc(reg) - 2);
 
-    printf("JUMP %x\n", reg_get_pc(reg) + 2);
+    //printf("JUMP %x\n", reg_get_pc(reg) + 2);
 }
 
 void ins_2nnn(Register reg,
@@ -76,7 +76,7 @@ void ins_2nnn(Register reg,
     reg_set_pc(reg,
                reg_get_pc(reg) - 2);
 
-    printf("CALL %x\n", reg_get_pc(reg) + 2);
+    //printf("CALL %x\n", reg_get_pc(reg) + 2);
 }
 
 void ins_3xkk(Register reg,
@@ -88,7 +88,7 @@ void ins_3xkk(Register reg,
     int x = (op & 0xF00) >> 8;
     int kk = (op & 0x0FF);
 
-    printf("SKIP V%x == kk, %x == %x\n", x, reg_get_byte(reg, x), kk);
+    //printf("SKIP V%x == kk, %x == %x\n", x, reg_get_byte(reg, x), kk);
     if (reg_get_byte(reg, x) == kk)
     {
         reg_set_pc(reg, reg_get_pc(reg) + 2);
@@ -105,7 +105,7 @@ void ins_4xkk(Register reg,
     int x = (op & 0xF00) >> 8;
     int kk = (op & 0x0FF);
 
-    printf("SKIP V%x != kk, %x != %x\n", x, reg_get_byte(reg, x), kk);
+    //printf("SKIP V%x != kk, %x != %x\n", x, reg_get_byte(reg, x), kk);
     if (reg_get_byte(reg, x) != kk)
     {
         reg_set_pc(reg,
@@ -123,8 +123,8 @@ void ins_5xy0(Register reg,
     int x = (op & 0xF00) >> 8;
     int y = (op & 0x0F0) >> 4;
 
-    printf("SKIP V%x, V%x, %x == %x\n", x, y,
-           reg_get_byte(reg, x), reg_get_byte(reg, y));
+    //printf("SKIP V%x, V%x, %x == %x\n", x, y,
+    //       reg_get_byte(reg, x), reg_get_byte(reg, y));
 
     if (reg_get_byte(reg, x) == reg_get_byte(reg, y))
     {
@@ -146,7 +146,7 @@ void ins_7xkk(Register reg,
                  FLAG_OVERFLOW,
                  false);
 
-    printf("ADD V%x = %x + %x\n", x, reg_get_byte(reg, x), kk);
+    //printf("ADD V%x = %x + %x\n", x, reg_get_byte(reg, x), kk);
     reg_set_byte(reg,
                  x,
                  result);
@@ -161,8 +161,8 @@ void ins_8xy0(Register reg,
     int x = (op & 0xF00) >> 8;
     int y = (op & 0x0F0) >> 4;
 
-    printf("LD V%x, V%x, V%x = %x\n", x, y,
-           x, reg_get_byte(reg, y));
+    //printf("LD V%x, V%x, V%x = %x\n", x, y,
+    //       x, reg_get_byte(reg, y));
     reg_load(reg, y, x);
 }
 
@@ -176,10 +176,11 @@ void ins_8xy1(Register reg,
     int x = (op & 0xF00) >> 8;
     int y = (op & 0x0F0) >> 4;
 
+    /*
     printf("OR V%x = %x | %x\n",
            x,
            reg_get_byte(reg, x),
-           reg_get_byte(reg, y));
+           reg_get_byte(reg, y));*/
     reg_or_reg(reg, y, x);
 }
 
@@ -192,10 +193,11 @@ void ins_8xy2(Register reg,
     int x = (op & 0xF00) >> 8;
     int y = (op & 0x0F0) >> 4;
 
+    /*
     printf("AND V%x = %x & %x\n",
            x,
            reg_get_byte(reg, x),
-           reg_get_byte(reg, y));
+           reg_get_byte(reg, y));*/
     reg_and_reg(reg, y, x);
 }
 
@@ -208,10 +210,11 @@ void ins_8xy3(Register reg,
     int x = (op & 0xF00) >> 8;
     int y = (op & 0x0F0) >> 4;
 
+    /*
     printf("XOR V%x = %x ^ %x\n",
            x,
            reg_get_byte(reg, x),
-           reg_get_byte(reg, y));
+           reg_get_byte(reg, y));*/
     reg_xor_reg(reg, y, x);
 }
 
@@ -224,10 +227,11 @@ void ins_8xy4(Register reg,
     int x = (op & 0xF00) >> 8;
     int y = (op & 0x0F0) >> 4;
 
+    /*
     printf("ADD V%x = %x + %x\n",
            x,
            reg_get_byte(reg, x),
-           reg_get_byte(reg, y));
+           reg_get_byte(reg, y));*/
     reg_add_reg(reg, y, x);
 }
 
@@ -244,10 +248,11 @@ void ins_8xy5(Register reg,
                  FLAG_NOTBORROW,
                  reg_get_byte(reg, x) > reg_get_byte(reg, y));
 
+    /*
     printf("SUB V%x = %x - %x\n",
            x,
            reg_get_byte(reg, y),
-           reg_get_byte(reg, x));
+           reg_get_byte(reg, x));*/
     reg_sub_reg(reg, y, x);
 }
 
@@ -260,9 +265,10 @@ void ins_8xy6(Register reg,
     int x = (op & 0xF00) >> 8;
     int y = (op & 0x0F0) >> 4;
 
+    /*
     printf("SHR V%x = %x >> 1\n",
            x,
-           reg_get_byte(reg, y));
+           reg_get_byte(reg, y));*/
 
     reg_set_flag(reg,
                  FLAG_LSB_ON,
@@ -280,14 +286,16 @@ void ins_8xy7(Register reg,
     int x = (op & 0xF00) >> 8;
     int y = (op & 0x0F0) >> 4;
 
+
     reg_set_flag(reg,
                  FLAG_NOTBORROW,
                  reg_get_byte(reg, x) < reg_get_byte(reg, y));
 
+    /*
     printf("SUBN V%x = %x - %x\n",
            x,
            reg_get_byte(reg, x),
-           reg_get_byte(reg, y));
+           reg_get_byte(reg, y));*/
     reg_subn_reg(reg, y, x);
 }
 
@@ -299,9 +307,10 @@ void ins_8xye(Register reg,
 {
     int x = (op & 0xF00) >> 8;
     int y = (op & 0x0F0) >> 4;
+    /*
     printf("SHL V%x = %x << 1\n",
            x,
-           reg_get_byte(reg, y));
+           reg_get_byte(reg, y));*/
 
     reg_set_flag(reg,
                  FLAG_MSB_ON,
@@ -318,8 +327,9 @@ void ins_9xy0(Register reg,
     int x = (op & 0xF00) >> 8;
     int y = (op & 0x0F0) >> 4;
 
+    /*
     printf("SKIP V%x, V%x, %x == %x\n", x, y,
-           reg_get_byte(reg, x), reg_get_byte(reg, y));
+           reg_get_byte(reg, x), reg_get_byte(reg, y));*/
 
     if (reg_get_byte(reg, x) != reg_get_byte(reg, y))
     {
@@ -341,7 +351,8 @@ void ins_cxkk(Register reg,
     reg_set_byte(reg,
                  x,
                  r & kk);
-    printf("RAND V%x = %x\n", x, r & kk);
+
+    //printf("RAND V%x = %x\n", x, r & kk);
 }
 
 void ins_dxyn(Register reg,
@@ -353,19 +364,19 @@ void ins_dxyn(Register reg,
     uint8_t bytes = (op & 0x00F),
             sprite[15] = {0},
             x = reg_get_byte(reg,
-                             (op & 0xF00) >> 8),
+                             (op & 0x0F00) >> 8),
             y = reg_get_byte(reg,
-                             (op & 0x0F0) >> 4);
+                             (op & 0x00F0) >> 4);
     bool is_colission = false;
 
-    printf("Dxyn x=%x y=%x bytes=%x \n", x, y, bytes);
+    //printf("Dxyn x=%x y=%x bytes=%x \n", x, y, bytes);
 
     for (int i = 0, addr = 0; i < bytes; i++)
     {
         addr = reg_get_word(reg, REG_WORD_I) + i;
         sprite[i] = mem_load_byte(mem,
                                   addr);
-        printf("    %x\n", sprite[i]);
+        //printf("    %x\n", sprite[i]);
     }
 
     is_colission = gfx_draw_sprite(x,
@@ -395,7 +406,7 @@ void ins_6xkk(Register reg,
     reg_set_byte(reg,
                  (op & 0x0F00) >> 8,
                  (op & 0xFF));
-    printf("LD V%d = %x\n", (op & 0x0F00) >> 8, (op & 0xFF));
+    //printf("LD V%d = %x\n", (op & 0x0F00) >> 8, (op & 0xFF));
 }
 
 void ins_annn(Register reg,
@@ -407,7 +418,7 @@ void ins_annn(Register reg,
     reg_set_word(reg,
                  REG_WORD_I,
                  (op & 0xFFF));
-    printf("LD Vi = %x\n", (op & 0xFFF));
+    //printf("LD Vi = %x\n", (op & 0xFFF));
 }
 
 void ins_ex9e(Register reg,
@@ -419,7 +430,7 @@ void ins_ex9e(Register reg,
     uint8_t x = ((op & 0xF00) >> 8);
     uint8_t key = key_pressed_now(keyboard);
 
-    printf("SKIP V%x, %x == %x\n", x, reg_get_byte(reg, x), key);
+    //printf("SKIP V%x, %x == %x\n", x, reg_get_byte(reg, x), key);
     if (x == key_pressed_now(keyboard))
         reg_inc_pc(reg);
 }
@@ -434,7 +445,7 @@ void ins_exa1(Register reg,
     uint8_t x = ((op & 0xF00) >> 8);
     uint8_t key = key_pressed_now(keyboard);
 
-    printf("SKIP V%x, %x == %x\n", x, reg_get_byte(reg, x), key);
+    //printf("SKIP V%x, %x == %x\n", x, reg_get_byte(reg, x), key);
     if (x != key_pressed_now(keyboard))
         reg_inc_pc(reg);
 }
@@ -447,7 +458,7 @@ void ins_fx07(Register reg,
               uint16_t op)
 {
     uint8_t x = ((op & 0xF00) >> 8);
-    printf("Set V%x = %x\n", x, reg_get_byte(reg, REG_BYTE_DELAY));
+    //printf("Set V%x = %x\n", x, reg_get_byte(reg, REG_BYTE_DELAY));
     reg_set_byte(reg,
                  x,
                  reg_get_byte(reg, REG_BYTE_DELAY));
@@ -465,7 +476,7 @@ void ins_fx0a(Register reg,
 
     if (key == 255)
     {
-        printf("WAITING INPUT %d\n", key);
+        //printf("WAITING INPUT %d\n", key);
         reg_set_pc(reg,
                    reg_get_pc(reg) - 2);
     }
@@ -501,7 +512,7 @@ void ins_fx18(Register reg,
     reg_set_byte(reg,
                  REG_BYTE_SOUND,
                  x);
-    printf("Set sound = V%x\n", x);
+    //printf("Set sound = V%x\n", x);
 }
 
 //ADD I = Vx + I, 0x_fx1e
@@ -516,9 +527,10 @@ void ins_fx1e(Register reg,
     uint16_t i = reg_get_word(reg,
                               REG_WORD_I);
 
+    /*
     printf("ADD Vi = %x + %x\n",
            x,
-           i);
+           i);*/
     reg_set_word(reg,
                  REG_WORD_I,
                  (x + i));
@@ -532,13 +544,13 @@ void ins_fx29(Register reg,
 {
     uint8_t x = reg_get_byte(reg,
                              ((op & 0xF00) >> 8));
-    uint8_t addr = mem_addr_segment(mem,
+    uint8_t addr = mem_load_segment(mem,
                                     5,
                                     x,
                                     0);
-    printf("Set Vi = addr(%x) = %x\n",
+    /*printf("Set Vi = addr(%x) = %x\n",
            x,
-           addr);
+           addr);*/
     reg_set_word(reg,
                  REG_WORD_I,
                  addr);
@@ -563,14 +575,14 @@ void ins_fx33(Register reg,
     }
 
     //digits are reversed in the array
-    printf("BCD %d, ", x);
+   // printf("BCD %d, ", x);
     for (int i = 0; i < 3; i++)
     {
-        printf("%d ", d[i]);
+        //printf("%d ", d[i]);
         mem_store_byte(mem, reg_get_word(reg, REG_WORD_I) + i,
                        d[i]);
     }
-    printf("\n");
+    //printf("\n");
 }
 
 //Store V0 though Vx, starting at I
@@ -587,12 +599,12 @@ void ins_fx55(Register reg,
         mem_store_byte(mem,
                        reg_get_word(reg, REG_WORD_I) + i,
                        reg_get_byte(reg, i));
-        printf("\nSTORE ALL %x = V%x = %x",
+        /*printf("\nSTORE ALL %x = V%x = %x",
                reg_get_word(reg, REG_WORD_I) + i,
                i,
-               reg_get_byte(reg, i));
+               reg_get_byte(reg, i));*/
     }
-    printf("\n");
+    //printf("\n");
 }
 
 //Load V0 though Vx, starting at I
@@ -610,14 +622,14 @@ void ins_fx65(Register reg,
         byte = mem_load_byte(mem,
                              reg_get_word(reg, REG_WORD_I) + i);
 
-        printf("\nLOAD ALL V%x = %x(%x)",
+        /*printf("\nLOAD ALL V%x = %x(%x)",
                i,
                byte,
-               reg_get_word(reg, REG_WORD_I) + i);
+               reg_get_word(reg, REG_WORD_I) + i);*/
 
         reg_set_byte(reg,
                      i,
                      byte);
     }
-    printf("\n");
+    //printf("\n");
 }

@@ -1,6 +1,7 @@
 #include "cpu.h"
 #include "font.h"
 #include "config.h"
+#include "debugger.h"
 
 #define NUM_CFG_INT 3
 #define NUM_CFG_STRING 1
@@ -10,12 +11,12 @@
 #define MEM_INIT_PC_ADDR 512
 #define SIZE_TAB_NAME 32
 
-#define ROM_INDEX 2
-#define PALLE_INDEX 8
+#define ROM_INDEX 0
+#define PALLE_INDEX 4
 
 #define FONT_HEIGHT 5
 #define FONT_NCHARS 16
-#define TICK 60.0
+#define TICK 5.0
 
 void poolEvents(Signal *sig,
                 Keyboard keyboard);
@@ -24,7 +25,8 @@ void clean(Register cpu,
            Memory mem,
            Gfx gfx,
            Config *cfg,
-           Keyboard key);
+           Keyboard key,
+           Debugger deb);
 
 void loader(ROM rom,
             Memory mem,
@@ -33,7 +35,8 @@ void loader(ROM rom,
 void loop(Register cpu,
           Memory mem,
           Gfx gfx,
-          Keyboard key);
+          Keyboard key,
+          Debugger deb);
 
 const char *config_strings[NUM_CFG_STRING] = {"TAB_NAME"};
 

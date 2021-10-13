@@ -4,103 +4,64 @@
 #include <time.h>
 #include "cpu.h"
 
-typedef struct cpu_type
-{
+const Instruction_ptr op_8[] =
+    {
+        [0x0] = ins_8xy0,
+        [0x1] = ins_8xy1,
+        [0x2] = ins_8xy2,
+        [0x3] = ins_8xy3,
+        [0x4] = ins_8xy4,
+        [0x5] = ins_8xy5,
+        [0x6] = ins_8xy6,
+        [0x7] = ins_8xy7,
+        [0xE] = ins_8xye};
 
-} CPU;
+const Instruction_ptr op_f[] =
+    {
+        [0x7] = ins_fx07,
+        [0xa] = ins_fx0a,
+        [0x15] = ins_fx15,
+        [0x18] = ins_fx18,
+        [0x1e] = ins_fx1e,
+        [0x29] = ins_fx29,
+        [0x33] = ins_fx33,
+        [0x55] = ins_fx55,
+        [0x65] = ins_fx65};
 
-CPU cpu;
+const Instruction_ptr op_e[] =
+    {
+        [0x1] = ins_exa1,
+        [0xe] = ins_ex9e};
+
+const Instruction_ptr op_0[] =
+    {
+        [0x0] = ins_00e0,
+        [0xe] = ins_00ee};
+
+Instruction instructions_group[] =
+    {
+        [0x0] = {.group = op_0, .mask = 0x000F},
+        [0x1] = {.group = (Instruction_ptr[]){ins_1nnn}, .mask = 0x0000},
+        [0x2] = {.group = (Instruction_ptr[]){ins_2nnn}, .mask = 0x0000},
+        [0x3] = {.group = (Instruction_ptr[]){ins_3xkk}, .mask = 0x0000},
+        [0x4] = {.group = (Instruction_ptr[]){ins_4xkk}, .mask = 0x0000},
+        [0x5] = {.group = (Instruction_ptr[]){ins_5xy0}, .mask = 0x0000},
+        [0x6] = {.group = (Instruction_ptr[]){ins_6xkk}, .mask = 0x0000},
+        [0x7] = {.group = (Instruction_ptr[]){ins_7xkk}, .mask = 0x0000},
+        [0x8] = {.group = op_8, .mask = 0x000F},
+        [0x9] = {.group = (Instruction_ptr[]){ins_9xy0}, .mask = 0x0000},
+        [0xa] = {.group = (Instruction_ptr[]){ins_annn}, .mask = 0x0000},
+        [0xc] = {.group = (Instruction_ptr[]){ins_cxkk}, .mask = 0x0000},
+        [0xd] = {.group = (Instruction_ptr[]){ins_dxyn}, .mask = 0x0000},
+        [0xe] = {.group = op_e, .mask = 0x000F},
+        [0xf] = {.group = op_f, .mask = 0x00FF}};
 
 Instruction_ptr cpu_decode(Register reg,
                            uint16_t op)
 {
-    printf("PC: %4x, OP: %x ", reg_get_pc(reg), op);
-
-    switch (op & 0xF000)
-    {
-    case 0x1000:
-        return ins_1nnn;
-    case 0x2000:
-        return ins_2nnn;
-    case 0x3000:
-        return ins_3xkk;
-    case 0x4000:
-        return ins_4xkk;
-    case 0x5000:
-        return ins_5xy0;
-    case 0x6000:
-        return ins_6xkk;
-    case 0x7000:
-        return ins_7xkk;
-    case 0x9000:
-        return ins_9xy0;
-    case 0xC000:
-        return ins_cxkk;
-    case 0xD000:
-        return ins_dxyn;
-    case 0xA000:
-        return ins_annn;
-    default:
-        switch (op & 0xF0FF)
-        {
-        case 0x0000:
-            return ins_nop;
-        case 0x00E0:
-            return ins_00e0;
-        case 0x00EE:
-            return ins_00ee;
-        case 0xE09E:
-            return ins_ex9e;
-        case 0xE0A1:
-            return ins_exa1;
-        }
-
-        switch (op & 0xF00F)
-        {
-        case 0x8000:
-            return ins_8xy0;
-        case 0x8001:
-            return ins_8xy1;
-        case 0x8002:
-            return ins_8xy2;
-        case 0x8003:
-            return ins_8xy3;
-        case 0x8004:
-            return ins_8xy4;
-        case 0x8005:
-            return ins_8xy5;
-        case 0x8006:
-            return ins_8xy6;
-        case 0x8007:
-            return ins_8xy7;
-        case 0x800E:
-            return ins_8xye;
-        }
-
-        switch (op & 0xF0FF)
-        {
-        case 0xF007:
-            return ins_fx07;
-        case 0xF00A:
-            return ins_fx0a;
-        case 0xF015:
-            return ins_fx15;
-        case 0xF018:
-            return ins_fx18;
-        case 0xF01E:
-            return ins_fx1e;
-        case 0xF029:
-            return ins_fx29;
-        case 0xF033:
-            return ins_fx33;
-        case 0xF055:
-            return ins_fx55;
-        case 0xF065:
-            return ins_fx65;
-        }
-
-        return ins_not_implmented;
-    }
+    printf("PC: %4x, OP: %4x          ", reg_get_pc(reg), op);
+    Instruction m = instructions_group[(op & 0xF000) >> 12];
+    return m.group[op & m.mask];
 }
 
 void cpu_execute(Register reg,
@@ -119,11 +80,11 @@ void cpu_execute(Register reg,
     reg_inc_pc(reg);
 }
 
-uint16_t cpu_fetch(Register cpu,
+uint16_t cpu_fetch(Register reg,
                    Memory mem)
 {
     return mem_load_word(mem,
-                         reg_get_pc(cpu));
+                         reg_get_pc(reg));
 }
 
 uint16_t cpu_cycle(Register reg,

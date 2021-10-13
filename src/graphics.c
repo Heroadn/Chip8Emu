@@ -105,7 +105,7 @@ bool gfx_draw_sprite(uint8_t offset_x,
             gfx->screen_pixels[x][y] = new_pixel;
 
             //if the pixel was activated them, mark as modified
-            if (((old_pixel == true) && (new_pixel == false)))
+            if (((sprite_pixel == true) && (old_pixel == true)))
                 is_modified = true;
         }
     }
