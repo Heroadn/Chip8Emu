@@ -59,3 +59,20 @@ typedef struct config_type
     char TAB_NAME[255];
     pallet pallets[SIZE_PALLETS];
 } * Config;*/
+
+/*
+SCREEN_WIDTH = 512
+SCREEN_HEIGHT = 256
+BITS_PER_PIXEL = 32
+TAB_NAME = HELLO_WORLD
+
+colors = 2b5329, background = 9ccc9c
+colors = faf0e6, background = 191919
+colors = 191919, background = faf0e6
+colors = d62643, background = c2e7e5
+colors = f2d9c7, background = 30d4c1
+colors = fbf9f3, background = 323846
+colors = fbf9f3, background = 0c8c6c
+colors = ffffff, background = 7289da 
+colors = 0c040b, background = f4f4fc   
+*/

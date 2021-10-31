@@ -1,6 +1,23 @@
 #include "main.h"
+//#define WINDOWS //the target system
 
-int main(void)
+ //windows needs a diferent entrypoint name 'WinMain'
+#if defined(LINUX)
+    int main(int argc, char *argv[])
+    {
+        init(argc, &argv);   
+        return 0;
+    }
+#elif defined(WINDOWS)
+    int WinMain(int argc, char *argv[])
+    {
+        init(argc, &argv);   
+        return 0;
+    }
+#endif
+
+
+void init(int argc, char *argv[])
 {
     int val[NUM_CFG_INT] = {0};
     char tab_name[SIZE_TAB_NAME];
@@ -59,7 +76,6 @@ int main(void)
           key,
           deb);
 
-    return 0;
 }
 
 void poolEvents(Signal *sig,

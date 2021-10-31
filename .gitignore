@@ -1,6 +1,11 @@
-bin/extract_numbers.py
-build/*.o
+bin/*
+build/*
 roms/*
+teste/*
+.idea/*
 venv
-.ideia
+teste
+.idea
 .vscode
+
+

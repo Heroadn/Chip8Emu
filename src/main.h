@@ -18,6 +18,8 @@
 #define FONT_NCHARS 16
 #define TICK 5.0
 
+void init();
+
 void poolEvents(Signal *sig,
                 Keyboard keyboard);
 
