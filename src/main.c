@@ -16,38 +16,41 @@
     }
 #endif
 
+//resolver resolução do disposiivo de target
 
 void init(int argc, char *argv[])
 {
-    int val[NUM_CFG_INT] = {0};
-    char tab_name[SIZE_TAB_NAME];
-    uint8_t colors[NUM_CFG_COLOR / NUM_CFG_ATTRIB_COLOR][CHANNELS],
-        background[NUM_CFG_COLOR / NUM_CFG_ATTRIB_COLOR][CHANNELS];
-    Config cfg = cfg_create(NUM_CFG_COLOR + NUM_CFG_STRING + NUM_CFG_INT,
+    //reading config file
+    int values[NUM_CFG_INT] = {0};
+    char tab_name[CFG_SIZE_TAB_NAME];
+    /*
+    uint8_t colors[CFG_NUM_PALLETS][CHANNELS];
+    uint8_t background[CFG_NUM_PALLETS][CHANNELS];
+    Config cfg = cfg_create(CFG_NUM_PALLETS + CFG_NUM_STRING + NUM_CFG_INT,
                             "config.cfg");
     cfg_open(cfg);
     init_conf(cfg,
               tab_name,
-              val,
+              values,
               colors,
-              background);
+              background);*/
 
     Debugger deb = debug_create();
     Register cpu = reg_create();
     Memory mem = mem_create();
     Keyboard key = key_create();
-    ROM rom = rom_create(rom_path[ROM_INDEX]);
+    ROM rom = rom_create(rom_path[CFG_IDX_ROM]);
     Font font = font_create(font_data,
                             FONT_NCHARS * FONT_HEIGHT);
 
-    Gfx gfx = gfx_create(val[0],
-                         val[1],
-                         val[2],
+    Gfx gfx = gfx_create(values[0],
+                         values[1],
+                         values[2],
                          colors,
                          background,
                          tab_name);
-    gfx_change_pallet(gfx,
-                      PALLE_INDEX);
+    //gfx_change_pallet(gfx,
+    //                  CFG_IDX_PALLET);
 
     /*INITIALIZING RAND*/
     time_t t;
@@ -100,20 +103,20 @@ void init_conf(Config cfg,
                          val,
                          config_ints);
     cfg_get_string(cfg,
-                   SIZE_TAB_NAME,
+                   CFG_SIZE_TAB_NAME,
                    0,
                    config_strings[0],
                    tab_name);
 
     cfg_get_color_array(cfg,
                         0,
-                        NUM_CFG_COLOR / NUM_CFG_ATTRIB_COLOR,
+                        CFG_NUM_PALLETS / CFG_NUM_LAYERS,
                         config_colors[0],
                         colors);
 
     cfg_get_color_array(cfg,
                         0,
-                        NUM_CFG_COLOR / NUM_CFG_ATTRIB_COLOR,
+                        CFG_NUM_PALLETS / CFG_NUM_LAYERS,
                         config_colors[1],
                         background);
 }

@@ -1,18 +1,19 @@
 #include "cpu.h"
 #include "font.h"
-#include "config.h"
+#include "../include/config.h"
 #include "debugger.h"
 
 #define NUM_CFG_INT 3
-#define NUM_CFG_STRING 1
-#define NUM_CFG_COLOR 18
-#define NUM_CFG_ATTRIB_COLOR 2
+#define CFG_NUM_STRING 1
+#define CFG_NUM_LAYERS 2    //number of layers, like color and background
+#define CFG_MAX_PALLETS 9
+#define CFG_NUM_PALLETS (CFG_NUM_LAYERS * CFG_MAX_PALLETS)
+#define CFG_IDX_PALLETS 4
+#define CFG_IDX_ROM 0
+#define CFG_SIZE_TAB_NAME 32
+
 
 #define MEM_INIT_PC_ADDR 512
-#define SIZE_TAB_NAME 32
-
-#define ROM_INDEX 0
-#define PALLE_INDEX 4
 
 #define FONT_HEIGHT 5
 #define FONT_NCHARS 16
@@ -40,9 +41,9 @@ void loop(Register cpu,
           Keyboard key,
           Debugger deb);
 
-const char *config_strings[NUM_CFG_STRING] = {"TAB_NAME"};
+const char *config_strings[CFG_NUM_STRING] = {"TAB_NAME"};
 
-const char *config_colors[NUM_CFG_COLOR] = {"colors",
+const char *config_colors[CFG_NUM_PALLETS] = {"colors",
                                             "background"};
 
 const char *config_ints[NUM_CFG_INT] = {"SCREEN_WIDTH",

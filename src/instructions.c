@@ -381,7 +381,6 @@ void ins_dxyn(Register reg,
 
     is_colission = gfx_draw_sprite(x,
                                    y,
-                                   PIXEL_SIZE,
                                    bytes,
                                    sprite,
                                    gfx);

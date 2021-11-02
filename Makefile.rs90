@@ -1,0 +1,73 @@
+# ------------------------------------------------
+# Generic Makefile
+#
+# Author: Hellkaiser
+# Date  : 10-31-2021
+#
+# Changelog :
+#   0.01 - simplified makefile
+#	0.02 - more robust makefile with directories, wildcards etc.
+#   0.03 - add defined flags to be passed to the preprocessor(cross compiling).
+# ------------------------------------------------
+SRC_DIR := src
+OBJ_DIR := build
+BIN_DIR := bin
+
+SRC = $(wildcard $(SRC_DIR)/*.c)
+OBJ = $(wildcard $(BIN_DIR)/*.o)
+
+#OBJS specifies which files to compile as part of the project
+#OBJS = main.c cpu.c graphics.c memory.c rom.c roms/binary_reader.c roms/file.c
+
+#mkfile
+COMPRESS = /opt/rs90-toolchain/usr/bin/mksquashfs
+
+#OBJ_NAME specifies the name of our exectuable
+OBJ_NAME = main
+
+#CC which compiler to use
+CC = /opt/rs90-toolchain/bin/mipsel-rs90-linux-musl-gcc
+
+#COMPILER_FLAGS additional compilation options
+COMPILER_FLAGS = -w -g -O 
+
+#DEF_FLAGS macros used by the preprocessor
+DEF_FLAGS = -D LINUX 
+
+#LINKER_FLAGS libraries we're linking
+LINKER_FLAGS = -lSDL -lSDL_image -lSDL_ttf
+
+define DESKTOP_ENTRY
+[Desktop Entry]
+Name=$(OBJ_NAME)
+Comment=Frontend for emulators, game engines
+Exec=$(OBJ_NAME)
+Terminal=false
+Type=Application
+StartupNotify=true
+Categories=applications;
+X-OD-NeedsDownscaling=true
+endef
+export DESKTOP_ENTRY
+
+.PHONY: compile
+compile :
+	$(CC) $(DEF_FLAGS) $(COMPILER_FLAGS)  -c	$(SRC)
+
+.PHONY: build
+build : $(OBJ)
+	$(CC) $(OBJ) $(COMPILER_FLAGS) $(LINKER_FLAGS) -o $(OBJ_NAME)
+
+.PHONY: opk	
+opk: 
+	echo "$$DESKTOP_ENTRY" > default.rs90.desktop
+	mkdir -p build/opk
+	cp build/$(OBJ_NAME) build/opk/$(OBJ_NAME)
+	cp default.rs90.desktop build/opk/default.rs90.desktop
+	$(COMPRESS) ./build/opk default.rs90.desktop $(OBJ_NAME).opk -all-root -no-xattrs -noappend -no-exports
+	mv $(OBJ_NAME).opk build/opk/$(OBJ_NAME).opk
+
+all:
+	compile
+	build
+	opk

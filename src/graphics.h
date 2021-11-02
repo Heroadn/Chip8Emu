@@ -8,7 +8,6 @@
 
 #define INTERNAL_WIDTH 64
 #define INTERNAL_HEIGHT 32
-#define PIXEL_SIZE 8
 #define CHANNELS 3
 #define DEBUG_GRAPHS 0
 #define NUM_PALLETS 10
@@ -62,13 +61,12 @@ SDL_Surface *gfx_load_image(char *filename);
 //
 bool gfx_draw_sprite(uint8_t offset_x,
                      uint8_t offset_y,
-                     uint8_t pixel_size,
                      uint8_t sprite_height,
                      uint8_t sprite[],
                      Gfx gfx);
 
 //
-bool gfx_init(const char *filename,
+SDL_Surface *gfx_init(const char *filename,
               Gfx gfx);
 
 //

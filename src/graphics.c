@@ -11,6 +11,8 @@ typedef struct gfx_type
     SDL_Surface *screen;
     int screen_width,
         screen_height,
+        pixel_width,
+        pixel_height,
         bits_per_pixel,
         i_pallet;
 
@@ -44,6 +46,8 @@ Gfx gfx_create(const int screen_width,
     Gfx gfx = calloc(1, sizeof(struct gfx_type));
     gfx->screen_width = screen_width;
     gfx->screen_height = screen_height;
+    gfx->pixel_width = screen_width / INTERNAL_WIDTH;
+    gfx->pixel_height = screen_height / INTERNAL_HEIGHT;
     gfx->bits_per_pixel = bits_per_pixel;
     gfx->i_pallet = 0;
 
@@ -52,12 +56,15 @@ Gfx gfx_create(const int screen_width,
     memcpy(gfx->background, background,
            NUM_PALLETS * CHANNELS * sizeof(uint8_t));
 
+    gfx->screen = gfx_init(filename, gfx);
+
+    /* 
     //Init sdl subsystems
     if (gfx_init(filename, gfx) == 0)
     {
         fprintf(stderr, "Error while initiating sdl\n");
         return EXIT_FAILURE;
-    }
+    }*/
 
     return gfx;
 }
@@ -78,7 +85,6 @@ void gfx_draw_pixel(SDL_Rect rect,
 
 bool gfx_draw_sprite(uint8_t offset_x,
                      uint8_t offset_y,
-                     uint8_t pixel_size,
                      uint8_t sprite_height,
                      uint8_t sprite[],
                      Gfx gfx)
@@ -157,8 +163,8 @@ void gfx_draw_screen(Gfx gfx)
 {
     SDL_Rect rect = {.x = 0,
                      .y = 0,
-                     .w = PIXEL_SIZE,
-                     .h = PIXEL_SIZE};
+                     .w = gfx->pixel_width,
+                     .h = gfx->pixel_height};
 
     uint8_t *colors;
 
@@ -166,8 +172,8 @@ void gfx_draw_screen(Gfx gfx)
     {
         for (int x = 0; x < INTERNAL_WIDTH; x++)
         {
-            rect.x = x * PIXEL_SIZE;
-            rect.y = y * PIXEL_SIZE;
+            rect.x = x * gfx->pixel_width;
+            rect.y = y * gfx->pixel_height;
 
             colors = select_color(gfx,
                                   x,
@@ -194,9 +200,11 @@ void gfx_destroy(Gfx gfx)
     free(gfx);
 }
 
-bool gfx_init(const char *name,
+SDL_Surface *gfx_init(const char *name,
               Gfx gfx)
 {
+    SDL_Surface *screen;
+
     //Start SDL
     if (SDL_Init(SDL_INIT_EVERYTHING) == -1)
     {
@@ -204,15 +212,22 @@ bool gfx_init(const char *name,
     }
 
     //Set up screen
-    gfx->screen = SDL_SetVideoMode(gfx->screen_width,
+    screen = SDL_SetVideoMode(gfx->screen_width,
                                    gfx->screen_height,
                                    gfx->bits_per_pixel,
                                    SDL_SWSURFACE);
 
+    //setsid
+    if(screen == NULL)
+    {
+        fprintf(stderr, "Error when creating window\n");
+        printf("Error: %s\n", SDL_GetError());
+        exit(EXIT_FAILURE);
+    }
+
     //Set the window caption
     SDL_WM_SetCaption(name, NULL);
-
-    return true;
+    return screen;
 }
 
 bool gfx_load_files(SDL_Surface **image,

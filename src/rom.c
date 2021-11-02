@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "file.h"
+#include "../include/file.h"
 #include "rom.h"
 
 ROM rom_create(const char *filename)

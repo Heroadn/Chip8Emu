@@ -5,6 +5,9 @@ teste/*
 .idea/*
 venv
 teste
+lib/*.a
+lib/*.la
+lib/pkgconfig
 .idea
 .vscode
 
