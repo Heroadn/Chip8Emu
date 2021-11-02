@@ -27,7 +27,6 @@ void poolEvents(Signal *sig,
 void clean(Register cpu,
            Memory mem,
            Gfx gfx,
-           Config *cfg,
            Keyboard key,
            Debugger deb);
 

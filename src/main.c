@@ -5,13 +5,15 @@
 #if defined(LINUX)
     int main(int argc, char *argv[])
     {
-        init(argc, &argv);   
+        printf("XD %d", argc);
+        //init(argc, &argv);   
         return 0;
     }
 #elif defined(WINDOWS)
+
     int WinMain(int argc, char *argv[])
     {
-        init(argc, &argv);   
+        init(__argc, __argv);   
         return 0;
     }
 #endif
@@ -20,20 +22,21 @@
 
 void init(int argc, char *argv[])
 {
-    //reading config file
-    int values[NUM_CFG_INT] = {0};
-    char tab_name[CFG_SIZE_TAB_NAME];
-    /*
-    uint8_t colors[CFG_NUM_PALLETS][CHANNELS];
-    uint8_t background[CFG_NUM_PALLETS][CHANNELS];
-    Config cfg = cfg_create(CFG_NUM_PALLETS + CFG_NUM_STRING + NUM_CFG_INT,
-                            "config.cfg");
-    cfg_open(cfg);
-    init_conf(cfg,
-              tab_name,
-              values,
-              colors,
-              background);*/
+    if(argc < 3)
+    {
+        fprintf(stdout, "Missing cmd arguments\n");
+        fprintf(stdout, "-w screen width\n");
+        fprintf(stdout, "-h screen height\n");
+        fprintf(stdout, "-p rrggbb rrggbb\n");
+        fprintf(stdout, "-r rom_path\n");
+
+        return 1;
+    }
+
+    int screen_width, screen_height, bpp;
+    char tab_name = "Chip8Emu";
+    const uint8_t color[CHANNELS];
+    const uint8_t background[CHANNELS];
 
     Debugger deb = debug_create();
     Register cpu = reg_create();
@@ -43,14 +46,12 @@ void init(int argc, char *argv[])
     Font font = font_create(font_data,
                             FONT_NCHARS * FONT_HEIGHT);
 
-    Gfx gfx = gfx_create(values[0],
-                         values[1],
-                         values[2],
-                         colors,
+    Gfx gfx = gfx_create(screen_width,
+                         screen_height,
+                         bpp,
+                         color,
                          background,
                          tab_name);
-    //gfx_change_pallet(gfx,
-    //                  CFG_IDX_PALLET);
 
     /*INITIALIZING RAND*/
     time_t t;
@@ -75,7 +76,6 @@ void init(int argc, char *argv[])
     clean(cpu,
           mem,
           gfx,
-          cfg,
           key,
           deb);
 
@@ -124,7 +124,6 @@ void init_conf(Config cfg,
 void clean(Register cpu,
            Memory mem,
            Gfx gfx,
-           Config *cfg,
            Keyboard key,
            Debugger deb)
 {
@@ -132,7 +131,6 @@ void clean(Register cpu,
     gfx_destroy(gfx);
     mem_destroy(mem);
     reg_destroy(cpu);
-    cfg_destroy(cfg);
     key_destroy(key);
     debug_destroy(deb);
 }

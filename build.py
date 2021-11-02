@@ -39,4 +39,6 @@ sys.stderr.buffer.write(command.stderr)
 #move executable to build and dlls 
 if exists(build_path + "/" + name_exec):
     os.remove(build_path + "/" + name_exec)
+
+print("[EXE] => ", build_path + "/" + name_exec)
 sh.move(name_exec, build_path)

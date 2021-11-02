@@ -16,9 +16,9 @@ typedef struct gfx_type
         bits_per_pixel,
         i_pallet;
 
-    uint8_t screen_pixels[INTERNAL_WIDTH][INTERNAL_HEIGHT],
-        colors[NUM_PALLETS][CHANNELS],
-        background[NUM_PALLETS][CHANNELS];
+    uint8_t screen_pixels[INTERNAL_WIDTH][INTERNAL_HEIGHT];
+    uint8_t colors[CHANNELS];
+    uint8_t background[CHANNELS];
 };
 
 static uint8_t *select_color(Gfx gfx,
@@ -39,8 +39,8 @@ static bool is_bit_set(uint8_t byte,
 Gfx gfx_create(const int screen_width,
                const int screen_height,
                const int bits_per_pixel,
-               const uint8_t colors[NUM_PALLETS][CHANNELS],
-               const uint8_t background[NUM_PALLETS][CHANNELS],
+               const uint8_t colors[CHANNELS],
+               const uint8_t background[CHANNELS],
                const char *filename)
 {
     Gfx gfx = calloc(1, sizeof(struct gfx_type));
@@ -49,23 +49,13 @@ Gfx gfx_create(const int screen_width,
     gfx->pixel_width = screen_width / INTERNAL_WIDTH;
     gfx->pixel_height = screen_height / INTERNAL_HEIGHT;
     gfx->bits_per_pixel = bits_per_pixel;
-    gfx->i_pallet = 0;
 
     memcpy(gfx->colors, colors,
-           NUM_PALLETS * CHANNELS * sizeof(uint8_t));
+            CHANNELS * sizeof(uint8_t));
     memcpy(gfx->background, background,
-           NUM_PALLETS * CHANNELS * sizeof(uint8_t));
+            CHANNELS * sizeof(uint8_t));
 
     gfx->screen = gfx_init(filename, gfx);
-
-    /* 
-    //Init sdl subsystems
-    if (gfx_init(filename, gfx) == 0)
-    {
-        fprintf(stderr, "Error while initiating sdl\n");
-        return EXIT_FAILURE;
-    }*/
-
     return gfx;
 }
 
@@ -120,9 +110,13 @@ bool gfx_draw_sprite(uint8_t offset_x,
 }
 
 void gfx_change_pallet(Gfx gfx,
-                       int i)
+                      const uint8_t colors[CHANNELS],
+                      const uint8_t background[CHANNELS])
 {
-    gfx->i_pallet = i;
+    memcpy(gfx->colors, colors,
+            CHANNELS * sizeof(uint8_t));
+    memcpy(gfx->background, background,
+            CHANNELS * sizeof(uint8_t));
 }
 
 void gfx_apply_surface(int x,

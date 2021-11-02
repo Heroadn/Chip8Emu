@@ -17,8 +17,8 @@ typedef struct gfx_type *Gfx;
 Gfx gfx_create(const int screen_width,
                const int screen_height,
                const int bits_per_pixel,
-               const uint8_t colors[NUM_PALLETS][CHANNELS],
-               const uint8_t background[NUM_PALLETS][CHANNELS],
+               const uint8_t colors[CHANNELS],
+               const uint8_t background[CHANNELS],
                const char *filename);
 
 //
@@ -53,7 +53,8 @@ void gfx_get_screen(Gfx gfx,
 
 //
 void gfx_change_pallet(Gfx gfx,
-                       int i);
+                      const uint8_t colors[CHANNELS],
+                      const uint8_t background[CHANNELS]);
 
 //
 SDL_Surface *gfx_load_image(char *filename);
