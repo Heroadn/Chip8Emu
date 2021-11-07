@@ -1,3 +1,5 @@
+#include <stdbool.h>
+
 #ifndef ROM_H
 #define ROM_H
 
@@ -12,7 +14,8 @@ typedef struct rom_type
 
 ROM rom_create(const char *filename);
 
-void rom_read(ROM rom, const char *filename);
+bool rom_read(ROM rom, 
+              const char *filename);
 
 void rom_destroy(ROM rom);
 

@@ -17,7 +17,6 @@
 
 #define FONT_HEIGHT 5
 #define FONT_NCHARS 16
-#define TICK 5.0
 
 void init();
 
@@ -38,7 +37,8 @@ void loop(Register cpu,
           Memory mem,
           Gfx gfx,
           Keyboard key,
-          Debugger deb);
+          Debugger deb,
+          int fps);
 
 const char *config_strings[CFG_NUM_STRING] = {"TAB_NAME"};
 

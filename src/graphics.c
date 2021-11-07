@@ -4,6 +4,7 @@
 #include <stdbool.h>
 #include <stdarg.h>
 #include <assert.h>
+#include <math.h>
 #include "graphics.h"
 
 typedef struct gfx_type
@@ -13,8 +14,7 @@ typedef struct gfx_type
         screen_height,
         pixel_width,
         pixel_height,
-        bits_per_pixel,
-        i_pallet;
+        bits_per_pixel;
 
     uint8_t screen_pixels[INTERNAL_WIDTH][INTERNAL_HEIGHT];
     uint8_t colors[CHANNELS];
@@ -25,8 +25,8 @@ static uint8_t *select_color(Gfx gfx,
                              const int x,
                              const int y)
 {
-    return (gfx->screen_pixels[x][y]) ? gfx->colors[gfx->i_pallet]
-                                      : gfx->background[gfx->i_pallet];
+    return (gfx->screen_pixels[x][y]) ? gfx->colors
+                                      : gfx->background;
 }
 
 static bool is_bit_set(uint8_t byte,
@@ -36,26 +36,27 @@ static bool is_bit_set(uint8_t byte,
     return (byte & (mask >> i)) == true;
 }
 
-Gfx gfx_create(const int screen_width,
-               const int screen_height,
-               const int bits_per_pixel,
+Gfx gfx_create(const int width,
+               const int height,
+               const int bpp,
                const uint8_t colors[CHANNELS],
                const uint8_t background[CHANNELS],
-               const char *filename)
+               const char *name)
 {
     Gfx gfx = calloc(1, sizeof(struct gfx_type));
-    gfx->screen_width = screen_width;
-    gfx->screen_height = screen_height;
-    gfx->pixel_width = screen_width / INTERNAL_WIDTH;
-    gfx->pixel_height = screen_height / INTERNAL_HEIGHT;
-    gfx->bits_per_pixel = bits_per_pixel;
+    gfx->screen_width = width;
+    gfx->screen_height = height;
+    gfx->pixel_width = ceil((double)width / INTERNAL_WIDTH);
+    gfx->pixel_height = ceil((double)height / INTERNAL_HEIGHT);
+    gfx->bits_per_pixel = bpp;
 
+    //moving colors to the struct
     memcpy(gfx->colors, colors,
-            CHANNELS * sizeof(uint8_t));
+           CHANNELS * sizeof(uint8_t));
     memcpy(gfx->background, background,
-            CHANNELS * sizeof(uint8_t));
+           CHANNELS * sizeof(uint8_t));
 
-    gfx->screen = gfx_init(filename, gfx);
+    gfx->screen = gfx_init(name, gfx);
     return gfx;
 }
 
@@ -110,13 +111,13 @@ bool gfx_draw_sprite(uint8_t offset_x,
 }
 
 void gfx_change_pallet(Gfx gfx,
-                      const uint8_t colors[CHANNELS],
-                      const uint8_t background[CHANNELS])
+                       const uint8_t colors[CHANNELS],
+                       const uint8_t background[CHANNELS])
 {
     memcpy(gfx->colors, colors,
-            CHANNELS * sizeof(uint8_t));
+           CHANNELS * sizeof(uint8_t));
     memcpy(gfx->background, background,
-            CHANNELS * sizeof(uint8_t));
+           CHANNELS * sizeof(uint8_t));
 }
 
 void gfx_apply_surface(int x,
@@ -195,7 +196,7 @@ void gfx_destroy(Gfx gfx)
 }
 
 SDL_Surface *gfx_init(const char *name,
-              Gfx gfx)
+                      Gfx gfx)
 {
     SDL_Surface *screen;
 
@@ -207,12 +208,12 @@ SDL_Surface *gfx_init(const char *name,
 
     //Set up screen
     screen = SDL_SetVideoMode(gfx->screen_width,
-                                   gfx->screen_height,
-                                   gfx->bits_per_pixel,
-                                   SDL_SWSURFACE);
+                              gfx->screen_height,
+                              gfx->bits_per_pixel,
+                              SDL_SWSURFACE);
 
     //setsid
-    if(screen == NULL)
+    if (screen == NULL)
     {
         fprintf(stderr, "Error when creating window\n");
         printf("Error: %s\n", SDL_GetError());

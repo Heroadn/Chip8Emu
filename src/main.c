@@ -1,57 +1,133 @@
 #include "main.h"
-//#define WINDOWS //the target system
+#include <string.h>
+#include <stdbool.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
 
- //windows needs a diferent entrypoint name 'WinMain'
+//win32 needs a diferent entrypoint 'WinMain'
 #if defined(LINUX)
-    int main(int argc, char *argv[])
-    {
-        printf("XD %d", argc);
-        //init(argc, &argv);   
-        return 0;
-    }
+int main(int argc, char *argv[])
+{
+    init(argc, &argv);
+    return 0;
+}
 #elif defined(WINDOWS)
-
-    int WinMain(int argc, char *argv[])
-    {
-        init(__argc, __argv);   
-        return 0;
-    }
+int WinMain(int argc, char *argv[])
+{
+    init(__argc, __argv);
+    return 0;
+}
 #endif
 
-//resolver resolução do disposiivo de target
+/*Arguments received by the cmd*/
+typedef struct
+{
+    int width, height;       /* Width and height of the screen */
+    int bpp, fps;            /* Bits per pixel and Frames per second*/
+    char *rom;               /* Path to the rom */
+    uint8_t color[CHANNELS]; /* Color of pixels*/
+    uint8_t bg[CHANNELS];    /* Color of the background */
+} Args;
+
+char *args_doc[] =
+    {
+        "    -w Width of the screen\n"
+        "    -h Height of the screen\n",
+        "    -p Bits per pixel(opt)\n",
+        "    -r Path to the ROM\n",
+        "    -f Frames per second(opt)\n",
+        "    -c Color of pixels(opt)\n",
+        "    -b Color of the background(opt)\n",
+        "\0"};
+
+/* Parse a single option. */
+static bool parse_opt(uint8_t key, char *arg, Args *arguments)
+{
+    switch (key)
+    {
+    case 'w':
+        arguments->width = atoi(arg);
+        break;
+    case 'h':
+        arguments->height = atoi(arg);
+        break;
+    case 'p':
+        arguments->bpp = atoi(arg);
+        break;
+    case 'f':
+        arguments->fps = atoi(arg);
+        break;
+    case 'r':
+        arguments->rom = arg;
+        break;
+    case 'c':
+        sscanf(arg,
+               "%2x%2x%2x",
+               &arguments->color[0],
+               &arguments->color[1],
+               &arguments->color[2]);
+        break;
+    case 'b':
+        sscanf(arg,
+               "%2x%2x%2x",
+               &arguments->bg[0],
+               &arguments->bg[1],
+               &arguments->bg[2]);
+        break;
+    default:
+        return false;
+    }
+
+    return true;
+}
 
 void init(int argc, char *argv[])
 {
-    if(argc < 3)
-    {
-        fprintf(stdout, "Missing cmd arguments\n");
-        fprintf(stdout, "-w screen width\n");
-        fprintf(stdout, "-h screen height\n");
-        fprintf(stdout, "-p rrggbb rrggbb\n");
-        fprintf(stdout, "-r rom_path\n");
+    /* Default arguments */
+    Args arguments = {
+        .color = {0x18,0x8c,0x35}, 
+        .bg = {0x0D, 0x0D, 0x0D},
+        .bpp = 16,
+        .fps = 60};
 
-        return 1;
+    for (size_t i = 0; i < argc; i++)
+    {
+        if (argv[i][0] == '-')
+        {
+            parse_opt(
+                argv[i][1],
+                argv[i + 1],
+                &arguments);
+            i++;
+        }
     }
 
-    int screen_width, screen_height, bpp;
-    char tab_name = "Chip8Emu";
-    const uint8_t color[CHANNELS];
-    const uint8_t background[CHANNELS];
+    /* Checking for errors such as negative screen width*/
+    if (arguments.width <= 0 || arguments.height <= 0)
+    {
+        printf("Invalid Args\nUsage:\n");
+        for (size_t i = 0; args_doc[i][0] != '\0'; i++)
+            printf("%s", args_doc[i]);
+        exit(EXIT_FAILURE);
+    }
 
+    //arguments
+    //rom_path[CFG_IDX_ROM]
     Debugger deb = debug_create();
     Register cpu = reg_create();
     Memory mem = mem_create();
     Keyboard key = key_create();
-    ROM rom = rom_create(rom_path[CFG_IDX_ROM]);
+    ROM rom = rom_create(arguments.rom);
     Font font = font_create(font_data,
                             FONT_NCHARS * FONT_HEIGHT);
 
-    Gfx gfx = gfx_create(screen_width,
-                         screen_height,
-                         bpp,
-                         color,
-                         background,
-                         tab_name);
+    Gfx gfx = gfx_create(arguments.width,
+                         arguments.height,
+                         arguments.bpp,
+                         arguments.color,
+                         arguments.bg,
+                         "Chip8Emu");
 
     /*INITIALIZING RAND*/
     time_t t;
@@ -71,14 +147,14 @@ void init(int argc, char *argv[])
          mem,
          gfx,
          key,
-         deb);
+         deb,
+         arguments.fps);
 
     clean(cpu,
           mem,
           gfx,
           key,
           deb);
-
 }
 
 void poolEvents(Signal *sig,
@@ -87,38 +163,6 @@ void poolEvents(Signal *sig,
     key_pool(keyboard);
     sig->sig_halt = (key_is_quit_event(keyboard) == true);
     sig->sig_exec = (key_is_pause_event(keyboard) == false);
-}
-
-void init_conf(Config cfg,
-               char *tab_name,
-               int val[NUM_CFG_INT],
-               uint8_t colors[][CHANNELS],
-               uint8_t background[][CHANNELS])
-{
-
-    cfg_open(cfg);
-    cfg_get_int_multiple(cfg,
-                         NUM_CFG_INT,
-                         0,
-                         val,
-                         config_ints);
-    cfg_get_string(cfg,
-                   CFG_SIZE_TAB_NAME,
-                   0,
-                   config_strings[0],
-                   tab_name);
-
-    cfg_get_color_array(cfg,
-                        0,
-                        CFG_NUM_PALLETS / CFG_NUM_LAYERS,
-                        config_colors[0],
-                        colors);
-
-    cfg_get_color_array(cfg,
-                        0,
-                        CFG_NUM_PALLETS / CFG_NUM_LAYERS,
-                        config_colors[1],
-                        background);
 }
 
 void clean(Register cpu,
@@ -157,7 +201,8 @@ void loop(Register cpu,
           Memory mem,
           Gfx gfx,
           Keyboard key,
-          Debugger deb)
+          Debugger deb,
+          int fps)
 {
     SDL_Event event;             //The event structure that will be used
     Instruction_ptr instruction; //Class resposible for current exec intructions
@@ -169,7 +214,7 @@ void loop(Register cpu,
     uint32_t last = 0,
              now = 0,
              delay = 0,
-             ticks_per_sec = 1000 / TICK;
+             ticks_per_sec = 1000 / fps;
     uint16_t op;
 
     while (sig.sig_halt == false)

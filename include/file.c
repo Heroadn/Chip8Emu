@@ -6,11 +6,11 @@
 FILE *file_open(const char *filename, const char *mode)
 {
 
-    FILE *fp;
+    FILE *fp = fopen(filename, mode);
 
-    if ((fp = fopen(filename, mode)) == NULL)
+    if (fp == NULL)
     {
-        fprintf(stderr, "%s cannot be %s\n",
+        fprintf(stderr, "File: %s cannot be %s\n",
                 filename, (mode[0] == 'r') ? "opened" : "created");
     }
 
@@ -20,7 +20,7 @@ FILE *file_open(const char *filename, const char *mode)
 int file_write_line(FILE *fp,
                     char *str)
 {
-    
+    return 0;
 }
 
 long file_nchars(FILE *fp)
