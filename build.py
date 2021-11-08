@@ -36,9 +36,13 @@ sys.stderr.buffer.write(command.stderr)
 #sys.stdout.buffer.write(command.stdout)
 #sys.stderr.buffer.write(command.stderr)
 
-#move executable to build and dlls 
-if exists(build_path + "/" + name_exec):
-    os.remove(build_path + "/" + name_exec)
+#criando diretorio para arquivo de build
+path_executable = build_path + "/" + name_make + "/";
+os.makedirs(os.path.dirname(path_executable), exist_ok=True)
 
-print("[EXE] => ", build_path + "/" + name_exec)
-sh.move(name_exec, build_path)
+#move executable to build and dlls 
+if exists(path_executable + name_exec):
+    os.remove(path_executable + name_exec)
+
+print("[EXE] => ", path_executable + name_exec)
+sh.move(name_exec, path_executable + name_exec)

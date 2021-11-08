@@ -40,15 +40,6 @@ void loop(Register cpu,
           Debugger deb,
           int fps);
 
-const char *config_strings[CFG_NUM_STRING] = {"TAB_NAME"};
-
-const char *config_colors[CFG_NUM_PALLETS] = {"colors",
-                                            "background"};
-
-const char *config_ints[NUM_CFG_INT] = {"SCREEN_WIDTH",
-                                        "SCREEN_HEIGHT",
-                                        "BITS_PER_PIXEL"};
-
 const char *rom_path[] = {"roms/test_opcode.ch8",
                           "roms/helloworld.rom",
                           "roms/breakout.ch8",

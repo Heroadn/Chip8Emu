@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#define DEBUG
 
 //win32 needs a diferent entrypoint 'WinMain'
 #if defined(LINUX)
@@ -112,13 +113,14 @@ void init(int argc, char *argv[])
         exit(EXIT_FAILURE);
     }
 
-    //arguments
-    //rom_path[CFG_IDX_ROM]
-    Debugger deb = debug_create();
-    Register cpu = reg_create();
+    
+    Register reg = reg_create();
     Memory mem = mem_create();
     Keyboard key = key_create();
     ROM rom = rom_create(arguments.rom);
+    Debugger deb = debug_create(reg,
+                                mem);
+
     Font font = font_create(font_data,
                             FONT_NCHARS * FONT_HEIGHT);
 
@@ -140,17 +142,17 @@ void init(int argc, char *argv[])
            font);
 
     //Iniciando pc
-    reg_set_pc(cpu,
+    reg_set_pc(reg,
                MEM_INIT_PC_ADDR);
 
-    loop(cpu,
+    loop(reg,
          mem,
          gfx,
          key,
          deb,
          arguments.fps);
 
-    clean(cpu,
+    clean(reg,
           mem,
           gfx,
           key,
@@ -165,7 +167,7 @@ void poolEvents(Signal *sig,
     sig->sig_exec = (key_is_pause_event(keyboard) == false);
 }
 
-void clean(Register cpu,
+void clean(Register reg,
            Memory mem,
            Gfx gfx,
            Keyboard key,
@@ -174,7 +176,7 @@ void clean(Register cpu,
     gfx_clean_up(gfx);
     gfx_destroy(gfx);
     mem_destroy(mem);
-    reg_destroy(cpu);
+    reg_destroy(reg);
     key_destroy(key);
     debug_destroy(deb);
 }
@@ -197,7 +199,7 @@ void loader(ROM rom,
     font_destroy(font);
 }
 
-void loop(Register cpu,
+void loop(Register reg,
           Memory mem,
           Gfx gfx,
           Keyboard key,
@@ -205,7 +207,6 @@ void loop(Register cpu,
           int fps)
 {
     SDL_Event event;             //The event structure that will be used
-    Instruction_ptr instruction; //Class resposible for current exec intructions
 
     //Hold the state of execution
     Signal sig = {.sig_exec = true,
@@ -226,16 +227,18 @@ void loop(Register cpu,
         if (sig.sig_exec)
         {
             //cpu_cycle
-            op = cpu_cycle(cpu,
+            op = cpu_cycle(reg,
                            mem,
                            gfx,
                            key);
 
             //debugger
-            debug_add_instruction(deb,
-                                  op);
+            #if defined(DEBUG)
+                debug_add_instruction(deb,
+                                      op);
 
-            debug_print(deb);
+                debug_print(deb);
+            #endif
 
             //Update Screen
             gfx_flip(gfx);

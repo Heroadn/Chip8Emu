@@ -1,6 +1,9 @@
 #include <stdint.h>
+
 #ifndef DEBUGGER_H
 #define DEBUGGER_H
+#include "memory.h"
+#include "register.h"
 
 typedef struct debugger_type *Debugger;
 
@@ -8,7 +11,7 @@ typedef enum
 {
     ADDR_NULL,//no values
     ADDR_ABS, //literal/immediate
-    ADDR_REG, //register
+    ADDR_REG, //to or from register
     
     //Specific
     ADDR_REG_I,
@@ -56,7 +59,8 @@ typedef struct instruction_log_type
     } operands[3];
 } Instruction_log;
 
-Debugger debug_create();
+Debugger debug_create(Register reg,
+                      Memory mem);
 
 void debug_destroy(Debugger debug);
 

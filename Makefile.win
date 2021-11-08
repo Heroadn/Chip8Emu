@@ -31,7 +31,7 @@ CC = i686-w64-mingw32-gcc
 COMPILER_FLAGS = -w -g -O 
 
 #DEF_FLAGS macros used by the preprocessor
-DEF_FLAGS = -D WINDOWS 
+DEF_FLAGS = -D WINDOWS
 
 #LINKER_FLAGS libraries we're linking
 LINKER_FLAGS = -lSDL -lSDL_image -lSDL_ttf -lmingw32

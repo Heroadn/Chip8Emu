@@ -3,9 +3,12 @@
 #include "instructions.h"
 #define INSTRUCTIONS_SIZE 4095
 
+//modificar para que o emulador mande o endereço que esta executando
 typedef struct debugger_type
 {
     Instruction_log instruction_log;
+    Register reg;
+    Memory mem;
 };
 
 typedef enum
@@ -312,7 +315,16 @@ static void print_intruction(Instruction_log info)
         print_operand(info.opcode,
                       info.operands[2]);
     }
+}
 
+void print_state(Register reg)
+{
+    for (size_t i = 0; i < SIZE_REG_BYTE; i++)
+        printf("V%d ", i);
+
+    for (size_t i = 0; i < SIZE_REG_BYTE; i++)
+        printf(" %d ", reg_get_byte(reg, i));
+    
     printf("\n");
 }
 
@@ -406,9 +418,12 @@ static uint16_t dissasembler(uint16_t op)
     }
 }
 
-Debugger debug_create()
+Debugger debug_create(Register reg,
+                      Memory mem)
 {
     Debugger debug = malloc(sizeof(struct debugger_type));
+    debug->mem = mem;
+    debug->reg = reg;
     return debug;
 }
 
@@ -421,6 +436,7 @@ void debug_print(Debugger debug)
 {
     Instruction_log info = debug->instruction_log;
     print_intruction(info);
+    printf("\n");
 }
 
 void debug_add_instruction(Debugger debug,
