@@ -1,21 +1,24 @@
 #include <stdbool.h>
+#include <stdint.h>
 
 #ifndef ROM_H
 #define ROM_H
 
 typedef struct rom_type
 {
-    //number of chars
-    long nchars;
+    long n;       //number of chars
+    uint8_t *ptr; //pointer to rom
+} * ROM;
 
-    //pointer to rom
-    char *ptr;  
-} *ROM;
+//const char *filename
+ROM rom_create();
 
-ROM rom_create(const char *filename);
+bool rom_read_data(ROM rom,
+                   const long n,
+                   const uint8_t *data);
 
-bool rom_read(ROM rom, 
-              const char *filename);
+bool rom_read_file(ROM rom,
+                   const char *filename);
 
 void rom_destroy(ROM rom);
 

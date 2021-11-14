@@ -43,20 +43,17 @@ Gfx gfx_create(const int width,
                const uint8_t background[CHANNELS],
                const char *name)
 {
-    Gfx gfx = calloc(1, sizeof(struct gfx_type));
+    Gfx gfx = malloc(sizeof(struct gfx_type));
     gfx->screen_width = width;
     gfx->screen_height = height;
+    gfx->bits_per_pixel = bpp;
     gfx->pixel_width = ceil((double)width / INTERNAL_WIDTH);
     gfx->pixel_height = ceil((double)height / INTERNAL_HEIGHT);
-    gfx->bits_per_pixel = bpp;
-
-    //moving colors to the struct
-    memcpy(gfx->colors, colors,
-           CHANNELS * sizeof(uint8_t));
-    memcpy(gfx->background, background,
-           CHANNELS * sizeof(uint8_t));
-
-    gfx->screen = gfx_init(name, gfx);
+    gfx->screen = gfx_init(name,
+                           gfx);
+    gfx_load_pallet(gfx,
+                    colors,
+                    background);
     return gfx;
 }
 
@@ -76,7 +73,7 @@ void gfx_draw_pixel(SDL_Rect rect,
 
 bool gfx_draw_sprite(uint8_t offset_x,
                      uint8_t offset_y,
-                     uint8_t sprite_height,
+                     uint8_t height,
                      uint8_t sprite[],
                      Gfx gfx)
 {
@@ -88,31 +85,29 @@ bool gfx_draw_sprite(uint8_t offset_x,
             y = 0;
     bool is_modified = false;
 
-    for (int i = 0; i < sprite_height; i++)
+    for (int i = 0; i < height; i++)
     {
-        sprite_pixel = sprite[i];
-
         for (int j = 0; j < 8; j++)
         {
             x = (offset_x + j) % INTERNAL_WIDTH;
             y = (offset_y + i) % INTERNAL_HEIGHT;
 
             old_pixel = gfx->screen_pixels[x][y];
-            new_pixel = (old_pixel ^ (sprite_pixel & (mask >> j)));
+            new_pixel = (old_pixel ^ (sprite[i] & (mask >> j)));
             gfx->screen_pixels[x][y] = new_pixel;
 
-            //if the pixel was activated them, mark as modified
-            if (((sprite_pixel == true) && (old_pixel == true)))
-                is_modified = true;
+            /*if the pixel was been turn off, is_modified = true 
+              '||' if is_modified is true keep it as true */
+            is_modified = is_modified || (old_pixel && new_pixel == false);
         }
     }
 
     return is_modified;
 }
 
-void gfx_change_pallet(Gfx gfx,
-                       const uint8_t colors[CHANNELS],
-                       const uint8_t background[CHANNELS])
+void gfx_load_pallet(Gfx gfx,
+                     const uint8_t colors[CHANNELS],
+                     const uint8_t background[CHANNELS])
 {
     memcpy(gfx->colors, colors,
            CHANNELS * sizeof(uint8_t));
@@ -167,6 +162,7 @@ void gfx_draw_screen(Gfx gfx)
     {
         for (int x = 0; x < INTERNAL_WIDTH; x++)
         {
+            //can be precalculated
             rect.x = x * gfx->pixel_width;
             rect.y = y * gfx->pixel_height;
 
@@ -221,7 +217,8 @@ SDL_Surface *gfx_init(const char *name,
     }
 
     //Set the window caption
-    SDL_WM_SetCaption(name, NULL);
+    SDL_WM_SetCaption(name,
+                      NULL);
     return screen;
 }
 

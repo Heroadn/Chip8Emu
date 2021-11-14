@@ -376,7 +376,6 @@ void ins_dxyn(Register reg,
         addr = reg_get_word(reg, REG_WORD_I) + i;
         sprite[i] = mem_load_byte(mem,
                                   addr);
-        //printf("    %x\n", sprite[i]);
     }
 
     is_colission = gfx_draw_sprite(x,
@@ -387,11 +386,7 @@ void ins_dxyn(Register reg,
 
     reg_set_flag(reg,
                  FLAG_COLLISION,
-                 is_colission == true);
-    /*
-    printf("\n");
-    printf("COLLISION %d\n", is_colission);
-    printf("\n");*/
+                 is_colission);
 
     gfx_draw_screen(gfx);
 }
@@ -426,7 +421,7 @@ void ins_ex9e(Register reg,
               Keyboard keyboard,
               uint16_t op)
 {
-    uint8_t x = ((op & 0xF00) >> 8);
+    uint8_t x = ((op & 0x0F00) >> 8);
     uint8_t key = key_pressed_now(keyboard);
 
     //printf("SKIP V%x, %x == %x\n", x, reg_get_byte(reg, x), key);
@@ -473,6 +468,7 @@ void ins_fx0a(Register reg,
     uint8_t x = ((op & 0xF00) >> 8);
     uint8_t key = key_pressed_now(keyboard);
 
+
     if (key == 255)
     {
         //printf("WAITING INPUT %d\n", key);
@@ -480,7 +476,8 @@ void ins_fx0a(Register reg,
                    reg_get_pc(reg) - 2);
     }
     else
-    {
+    {   
+        //printf("WAITING INPUT %d\n", key);
         printf("\n");
         reg_set_byte(reg,
                      x,

@@ -52,7 +52,7 @@ void gfx_get_screen(Gfx gfx,
                     uint8_t screen[INTERNAL_WIDTH][INTERNAL_HEIGHT]);
 
 //
-void gfx_change_pallet(Gfx gfx,
+void gfx_load_pallet(Gfx gfx,
                       const uint8_t colors[CHANNELS],
                       const uint8_t background[CHANNELS]);
 

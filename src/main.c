@@ -10,14 +10,12 @@
 #if defined(LINUX)
 int main(int argc, char *argv[])
 {
-    init(argc, &argv);
-    return 0;
+    return init(argc, &argv);
 }
 #elif defined(WINDOWS)
 int WinMain(int argc, char *argv[])
 {
-    init(__argc, __argv);
-    return 0;
+    return init(__argc, __argv);
 }
 #endif
 
@@ -43,38 +41,40 @@ char *args_doc[] =
         "\0"};
 
 /* Parse a single option. */
-static bool parse_opt(uint8_t key, char *arg, Args *arguments)
+static bool parse_opt(uint8_t key,
+                      char *arg,
+                      Args *args)
 {
     switch (key)
     {
     case 'w':
-        arguments->width = atoi(arg);
+        args->width = atoi(arg);
         break;
     case 'h':
-        arguments->height = atoi(arg);
+        args->height = atoi(arg);
         break;
     case 'p':
-        arguments->bpp = atoi(arg);
+        args->bpp = atoi(arg);
         break;
     case 'f':
-        arguments->fps = atoi(arg);
+        args->fps = atoi(arg);
         break;
     case 'r':
-        arguments->rom = arg;
+        args->rom = arg;
         break;
     case 'c':
         sscanf(arg,
                "%2x%2x%2x",
-               &arguments->color[0],
-               &arguments->color[1],
-               &arguments->color[2]);
+               &args->color[0],
+               &args->color[1],
+               &args->color[2]);
         break;
     case 'b':
         sscanf(arg,
                "%2x%2x%2x",
-               &arguments->bg[0],
-               &arguments->bg[1],
-               &arguments->bg[2]);
+               &args->bg[0],
+               &args->bg[1],
+               &args->bg[2]);
         break;
     default:
         return false;
@@ -83,14 +83,15 @@ static bool parse_opt(uint8_t key, char *arg, Args *arguments)
     return true;
 }
 
-void init(int argc, char *argv[])
+int init(int argc,
+         char *argv[])
 {
-    /* Default arguments */
-    Args arguments = {
-        .color = {0x18,0x8c,0x35}, 
+    /* Default args */
+    Args args = {
+        .color = {0x18, 0x8c, 0x35},
         .bg = {0x0D, 0x0D, 0x0D},
         .bpp = 16,
-        .fps = 60};
+        .fps = 30};
 
     for (size_t i = 0; i < argc; i++)
     {
@@ -99,13 +100,13 @@ void init(int argc, char *argv[])
             parse_opt(
                 argv[i][1],
                 argv[i + 1],
-                &arguments);
+                &args);
             i++;
         }
     }
 
     /* Checking for errors such as negative screen width*/
-    if (arguments.width <= 0 || arguments.height <= 0)
+    if (args.width <= 0 || args.height <= 0)
     {
         printf("Invalid Args\nUsage:\n");
         for (size_t i = 0; args_doc[i][0] != '\0'; i++)
@@ -113,50 +114,58 @@ void init(int argc, char *argv[])
         exit(EXIT_FAILURE);
     }
 
-    
-    Register reg = reg_create();
-    Memory mem = mem_create();
-    Keyboard key = key_create();
-    ROM rom = rom_create(arguments.rom);
-    Debugger deb = debug_create(reg,
-                                mem);
-
-    Font font = font_create(font_data,
-                            FONT_NCHARS * FONT_HEIGHT);
-
-    Gfx gfx = gfx_create(arguments.width,
-                         arguments.height,
-                         arguments.bpp,
-                         arguments.color,
-                         arguments.bg,
-                         "Chip8Emu");
-
     /*INITIALIZING RAND*/
     time_t t;
     srand((unsigned)time(&t));
 
-    /*Carregando rom na memoria e font, 
-     *ambas as classes limpas apos o carregamento*/
-    loader(rom,
-           mem,
-           font);
+    /*INITIALIZING MODULES*/
+    Memory mem = mem_create();
+    Keyboard key = key_create();
+    Register reg = reg_create();
+    ROM rom = rom_create();
+    ROM fnt = rom_create();
+    Debugger deb = debug_create(reg,
+                                mem);
 
-    //Iniciando pc
+    Gfx gfx = gfx_create(args.width,
+                         args.height,
+                         args.bpp,
+                         args.color,
+                         args.bg,
+                         "Chip8Emu");
+
+    /*reading rom, font and setting pc as ADDRS_ROM*/
+    rom_read_file(rom,
+                  args.rom);
+    rom_read_data(fnt,
+                  FONT_N,
+                  font_data);
     reg_set_pc(reg,
-               MEM_INIT_PC_ADDR);
+               ADDRS_ROM);
 
+    /*loading rom and font into mem
+    rom and fnt are deallocated after use*/
+    loader(mem,
+           rom,
+           fnt);
+
+    /*It's the emu loop,
+    draws, and do cpu operations*/
     loop(reg,
          mem,
          gfx,
          key,
          deb,
-         arguments.fps);
+         args.fps);
 
+    /*dealloc all modules after use*/
     clean(reg,
           mem,
           gfx,
           key,
           deb);
+
+    return EXIT_SUCCESS;
 }
 
 void poolEvents(Signal *sig,
@@ -181,22 +190,23 @@ void clean(Register reg,
     debug_destroy(deb);
 }
 
-void loader(ROM rom,
-            Memory mem,
-            Font font)
+void loader(Memory mem,
+            ROM rom,
+            ROM fnt)
 {
-    //mover rom para a ram
-    mem_move_rom(mem,
-                 rom->nchars,
-                 rom->ptr);
+    mem_load(mem,
+             rom->n,
+             ADDRS_ROM,
+             rom->ptr);
 
-    mem_move_interpreter(mem,
-                         font->size,
-                         font->ptr);
+    mem_load(mem,
+             fnt->n,
+             ADDRS_FONT,
+             fnt->ptr);
 
     //descartando componente rom
     rom_destroy(rom);
-    font_destroy(font);
+    rom_destroy(fnt);
 }
 
 void loop(Register reg,
@@ -206,12 +216,13 @@ void loop(Register reg,
           Debugger deb,
           int fps)
 {
-    SDL_Event event;             //The event structure that will be used
+    SDL_Event event; //The event structure that will be used
 
     //Hold the state of execution
     Signal sig = {.sig_exec = true,
                   .sig_halt = false};
 
+    //fps and clock ticking
     uint32_t last = 0,
              now = 0,
              delay = 0,
@@ -232,13 +243,15 @@ void loop(Register reg,
                            gfx,
                            key);
 
-            //debugger
-            #if defined(DEBUG)
+//debugger
+#if defined(DEBUG)
+            {
                 debug_add_instruction(deb,
                                       op);
 
                 debug_print(deb);
-            #endif
+            }
+#endif
 
             //Update Screen
             gfx_flip(gfx);

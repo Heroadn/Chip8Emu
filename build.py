@@ -44,5 +44,8 @@ os.makedirs(os.path.dirname(path_executable), exist_ok=True)
 if exists(path_executable + name_exec):
     os.remove(path_executable + name_exec)
 
-print("[EXE] => ", path_executable + name_exec)
-sh.move(name_exec, path_executable + name_exec)
+if exists(name_exec):
+    print("[EXE] => ", path_executable + name_exec)
+    sh.move(name_exec, path_executable + name_exec)
+else:
+    print("[ERR] => Executable not found, possibly a complation error.")

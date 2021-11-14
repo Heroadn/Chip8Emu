@@ -5,19 +5,12 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#include "font.h"
 #include "register.h"
 #include "instructions.h"
 #include "memory.h"
 #include "rom.h"
 #include "graphics.h"
 #include "keyboard.h"
-
-typedef struct
-{
-    bool *sig_halt, //signal to halt
-        *sig_exec;  //signal to cpu_execute the instruction
-} Signal;
 
 #ifndef CPU_H
 #define CPU_H

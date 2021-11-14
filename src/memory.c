@@ -44,23 +44,14 @@ void mem_clear(Memory mem)
         mem->RAM[i];
 }
 
-void mem_move_rom(Memory mem,
-                  const long size,
-                  const uint8_t *rom)
+void mem_load(Memory mem,
+              const long n,
+              const long addrs,
+              const uint8_t *data)
 {
-    memcpy((mem->segment.data),
-           rom,
-           size);
-}
-
-void mem_move_interpreter(Memory mem,
-                          const long size,
-                          const uint8_t *data)
-{
-    memcpy(
-        (mem->segment.interpreter),
-        data,
-        size);
+    memcpy((mem->RAM + addrs),
+           data,
+           n);
 }
 
 void mem_destroy(Memory mem)
@@ -76,11 +67,11 @@ void mem_store_byte(Memory mem,
 }
 
 uint8_t mem_load_segment(Memory mem,
-                         uint8_t n_elemts,
+                         uint8_t n,
                          uint8_t index,
                          uint16_t start_addr)
 {
-    start_addr += (n_elemts * index);
+    start_addr += (n * index);
     return (start_addr % RAM_SIZE);
 }
 
