@@ -5,7 +5,7 @@
 #define ADDRS_FONT 0x000
 #define FONT_HEIGHT 5
 #define FONT_CHARS 16
-#define FONT_N FONT_HEIGHT * FONT_CHARS
+#define FONT_N FONT_HEIGHT *FONT_CHARS
 
 typedef struct
 {
@@ -13,57 +13,52 @@ typedef struct
         *sig_exec;  //signal to cpu_execute the instruction
 } Signal;
 
-int init(int argc, char *argv[]);
+/*Arguments received by the cmd*/
+typedef struct
+{
+    int width, height;       /* Width and height of the screen */
+    int bpp, fps;            /* Bits per pixel and Frames per second*/
+    char *rom;               /* Path to the rom */
+    uint8_t color[CHANNELS]; /* Color of pixels*/
+    uint8_t bg[CHANNELS];    /* Color of the background */
+} Args;
 
-void poolEvents(Signal *sig,
-                Keyboard keyboard);
+static int init(int argc, char *argv[]);
 
-void clean(Register cpu,
-           Memory mem,
-           Gfx gfx,
-           Keyboard key,
-           Debugger deb);
+static void poolEvents(Signal *sig,
+                       Keyboard keyboard);
 
-void loader(Memory mem,
-            ROM rom,
-            ROM font);
+static void clean(Register cpu,
+                  Memory mem,
+                  Gfx gfx,
+                  Keyboard key,
+                  Debugger deb);
 
-void loop(Register cpu,
-          Memory mem,
-          Gfx gfx,
-          Keyboard key,
-          Debugger deb,
-          int fps);
+static void loader(Memory mem,
+                   ROM rom,
+                   ROM font);
 
-const char *rom_path[] = {"roms/test_opcode.ch8",
-                          "roms/helloworld.rom",
-                          "roms/breakout.ch8",
-                          "roms/SCTEST.CH8",
-                          "roms/chip8-test-rom.ch8",
-                          "roms/Clock Program.ch8",
-                          "roms/Keypad Test.ch8",
-                          "roms/Chip8 Picture.ch8",
-                          "roms/IBM Logo.ch8",
-                          "roms/Particle Demo.ch8",
-                          "roms/Tetris.ch8",
-                          "roms/Maze.ch8",
-                          "roms/c8_test.c8",
-                          "roms/BC_test.ch8",
-                          "roms/snake.ch8"};
+static void loop(Register cpu,
+                 Memory mem,
+                 Gfx gfx,
+                 Keyboard key,
+                 Debugger deb,
+                 int fps);
 
-const uint8_t font_data[FONT_N] = {0xF0, 0x90, 0x90, 0x90, 0xF0,
-                                                      0x20, 0x60, 0x20, 0x20, 0x70,
-                                                      0xF0, 0x10, 0xF0, 0x80, 0xF0,
-                                                      0xF0, 0x10, 0xF0, 0x10, 0xF0,
-                                                      0x90, 0x90, 0xF0, 0x10, 0x10,
-                                                      0xF0, 0x80, 0xF0, 0x10, 0xF0,
-                                                      0xF0, 0x80, 0xF0, 0x90, 0xF0,
-                                                      0xF0, 0x10, 0x20, 0x40, 0x40,
-                                                      0xF0, 0x90, 0xF0, 0x90, 0xF0,
-                                                      0xF0, 0x90, 0xF0, 0x10, 0xF0,
-                                                      0xF0, 0x90, 0xF0, 0x90, 0x90,
-                                                      0xE0, 0x90, 0xE0, 0x90, 0xE0,
-                                                      0xF0, 0x80, 0x80, 0x80, 0xF0,
-                                                      0xE0, 0x90, 0x90, 0x90, 0xE0,
-                                                      0xF0, 0x80, 0xF0, 0x80, 0xF0,
-                                                      0xF0, 0x80, 0xF0, 0x80, 0x80};
+const uint8_t font_data[FONT_N] =
+    {0xF0, 0x90, 0x90, 0x90, 0xF0,
+     0x20, 0x60, 0x20, 0x20, 0x70,
+     0xF0, 0x10, 0xF0, 0x80, 0xF0,
+     0xF0, 0x10, 0xF0, 0x10, 0xF0,
+     0x90, 0x90, 0xF0, 0x10, 0x10,
+     0xF0, 0x80, 0xF0, 0x10, 0xF0,
+     0xF0, 0x80, 0xF0, 0x90, 0xF0,
+     0xF0, 0x10, 0x20, 0x40, 0x40,
+     0xF0, 0x90, 0xF0, 0x90, 0xF0,
+     0xF0, 0x90, 0xF0, 0x10, 0xF0,
+     0xF0, 0x90, 0xF0, 0x90, 0x90,
+     0xE0, 0x90, 0xE0, 0x90, 0xE0,
+     0xF0, 0x80, 0x80, 0x80, 0xF0,
+     0xE0, 0x90, 0x90, 0x90, 0xE0,
+     0xF0, 0x80, 0xF0, 0x80, 0xF0,
+     0xF0, 0x80, 0xF0, 0x80, 0x80};

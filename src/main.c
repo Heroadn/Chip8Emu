@@ -19,27 +19,6 @@ int WinMain(int argc, char *argv[])
 }
 #endif
 
-/*Arguments received by the cmd*/
-typedef struct
-{
-    int width, height;       /* Width and height of the screen */
-    int bpp, fps;            /* Bits per pixel and Frames per second*/
-    char *rom;               /* Path to the rom */
-    uint8_t color[CHANNELS]; /* Color of pixels*/
-    uint8_t bg[CHANNELS];    /* Color of the background */
-} Args;
-
-char *args_doc[] =
-    {
-        "    -w Width of the screen\n"
-        "    -h Height of the screen\n",
-        "    -p Bits per pixel(opt)\n",
-        "    -r Path to the ROM\n",
-        "    -f Frames per second(opt)\n",
-        "    -c Color of pixels(opt)\n",
-        "    -b Color of the background(opt)\n",
-        "\0"};
-
 /* Parse a single option. */
 static bool parse_opt(uint8_t key,
                       char *arg,
@@ -83,7 +62,61 @@ static bool parse_opt(uint8_t key,
     return true;
 }
 
-int init(int argc,
+static void read_opt(int argc,
+                     char *argv[],
+                     Args *args)
+{
+    for (size_t i = 0; i < argc; i++)
+    {
+        if (argv[i][0] == '-')
+        {
+            parse_opt(
+                argv[i][1],
+                argv[i + 1],
+                args);
+            i++;
+        }
+    }
+}
+
+static void inva_opt(Args *args)
+{
+    char *args_doc[] =
+        {
+            "    -w Width of the screen\n"
+            "    -h Height of the screen\n",
+            "    -p Bits per pixel(opt)\n",
+            "    -r Path to the ROM\n",
+            "    -f Frames per second(opt)\n",
+            "    -c Color of pixels(opt)\n",
+            "    -b Color of the background(opt)\n",
+            "\0"};
+
+    /* Checking for errors such as negative screen width*/
+    if (args->width <= 0 || args->height <= 0)
+    {
+        printf("Invalid Args\nUsage:\n");
+        for (size_t i = 0; args_doc[i][0] != '\0'; i++)
+            printf("%s", args_doc[i]);
+        exit(EXIT_FAILURE);
+    }
+}
+
+static void debug(uint16_t op,
+                  Debugger deb)
+{
+    //debugger
+#if defined(DEBUG)
+    {
+        debug_add_instruction(deb,
+                              op);
+
+        debug_print(deb);
+    }
+#endif
+}
+
+static int init(int argc,
          char *argv[])
 {
     /* Default args */
@@ -93,26 +126,8 @@ int init(int argc,
         .bpp = 16,
         .fps = 30};
 
-    for (size_t i = 0; i < argc; i++)
-    {
-        if (argv[i][0] == '-')
-        {
-            parse_opt(
-                argv[i][1],
-                argv[i + 1],
-                &args);
-            i++;
-        }
-    }
-
-    /* Checking for errors such as negative screen width*/
-    if (args.width <= 0 || args.height <= 0)
-    {
-        printf("Invalid Args\nUsage:\n");
-        for (size_t i = 0; args_doc[i][0] != '\0'; i++)
-            printf("%s", args_doc[i]);
-        exit(EXIT_FAILURE);
-    }
+    read_opt(argc, argv, &args);
+    inva_opt(&args);
 
     /*INITIALIZING RAND*/
     time_t t;
@@ -126,7 +141,6 @@ int init(int argc,
     ROM fnt = rom_create();
     Debugger deb = debug_create(reg,
                                 mem);
-
     Gfx gfx = gfx_create(args.width,
                          args.height,
                          args.bpp,
@@ -168,7 +182,7 @@ int init(int argc,
     return EXIT_SUCCESS;
 }
 
-void poolEvents(Signal *sig,
+static void poolEvents(Signal *sig,
                 Keyboard keyboard)
 {
     key_pool(keyboard);
@@ -176,7 +190,7 @@ void poolEvents(Signal *sig,
     sig->sig_exec = (key_is_pause_event(keyboard) == false);
 }
 
-void clean(Register reg,
+static void clean(Register reg,
            Memory mem,
            Gfx gfx,
            Keyboard key,
@@ -190,7 +204,7 @@ void clean(Register reg,
     debug_destroy(deb);
 }
 
-void loader(Memory mem,
+static void loader(Memory mem,
             ROM rom,
             ROM fnt)
 {
@@ -209,7 +223,7 @@ void loader(Memory mem,
     rom_destroy(fnt);
 }
 
-void loop(Register reg,
+static void loop(Register reg,
           Memory mem,
           Gfx gfx,
           Keyboard key,
@@ -223,10 +237,9 @@ void loop(Register reg,
                   .sig_halt = false};
 
     //fps and clock ticking
-    uint32_t last = 0,
-             now = 0,
-             delay = 0,
-             ticks_per_sec = 1000 / fps;
+    uint32_t last = 0;
+    uint32_t now = 0;
+    uint32_t ticks_per_sec = 1000 / fps;
     uint16_t op;
 
     while (sig.sig_halt == false)
@@ -243,21 +256,14 @@ void loop(Register reg,
                            gfx,
                            key);
 
-//debugger
-#if defined(DEBUG)
-            {
-                debug_add_instruction(deb,
-                                      op);
-
-                debug_print(deb);
-            }
-#endif
-
             //Update Screen
             gfx_flip(gfx);
+
+            //debug
+            debug(op,
+                  deb);
         }
         now = SDL_GetTicks();
-        delay = ticks_per_sec - (now - last);
-        SDL_Delay(delay);
+        SDL_Delay(ticks_per_sec - (now - last));
     }
 }

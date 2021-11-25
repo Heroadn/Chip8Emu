@@ -15,6 +15,22 @@
 #ifndef CPU_H
 #define CPU_H
 
+/*
+================
+ cpu_cycle: calls fetch, 
+ decode and execute the instruction 
+================
+*/
+uint16_t cpu_cycle(Register cpu,
+                   Memory mem,
+                   Gfx gfx,
+                   Keyboard key);
+
+/*
+================
+ cpu_execute: execute the instruction 
+================
+*/
 void cpu_execute(Register cpu,
                  Memory mem,
                  Gfx gfx,
@@ -22,14 +38,19 @@ void cpu_execute(Register cpu,
                  uint16_t op,
                  Keyboard key);
 
-uint16_t cpu_cycle(Register cpu,
-                   Memory mem,
-                   Gfx gfx,
-                   Keyboard key);
-
+/*
+================
+ cpu_fetch: fetch the instruction from mem 
+================
+*/
 uint16_t cpu_fetch(Register cpu,
                    Memory mem);
 
+/*
+================
+ cpu_decode: decode op in a instruction 
+================
+*/
 Instruction_ptr cpu_decode(Register cpu,
                            uint16_t op);
 

@@ -17,16 +17,18 @@ typedef struct gfx_type
         bits_per_pixel;
 
     uint8_t screen_pixels[INTERNAL_WIDTH][INTERNAL_HEIGHT];
-    uint8_t colors[CHANNELS];
-    uint8_t background[CHANNELS];
+    uint8_t colors[LAYERS][CHANNELS];
+    //uint8_t background[CHANNELS];
 };
 
 static uint8_t *select_color(Gfx gfx,
                              const int x,
                              const int y)
 {
+    /*
     return (gfx->screen_pixels[x][y]) ? gfx->colors
-                                      : gfx->background;
+                                      : gfx->background;*/
+    return gfx->colors[gfx->screen_pixels[x][y] == false];
 }
 
 static bool is_bit_set(uint8_t byte,
@@ -109,9 +111,9 @@ void gfx_load_pallet(Gfx gfx,
                      const uint8_t colors[CHANNELS],
                      const uint8_t background[CHANNELS])
 {
-    memcpy(gfx->colors, colors,
+    memcpy(gfx->colors[0], colors,
            CHANNELS * sizeof(uint8_t));
-    memcpy(gfx->background, background,
+    memcpy(gfx->colors[1], background,
            CHANNELS * sizeof(uint8_t));
 }
 
