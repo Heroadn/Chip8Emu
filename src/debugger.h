@@ -69,4 +69,6 @@ void debug_print(Debugger debug);
 void debug_add_instruction(Debugger debug,
                            uint16_t opcode);
 
+void debug_print_state(Register reg);
+
 #endif DEBUGGER_H /* DEBUGGER_H */

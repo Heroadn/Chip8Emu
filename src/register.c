@@ -9,7 +9,7 @@
 
 typedef struct register_type
 {
-    //architecture
+    // architecture
     uint8_t regs_byte[SIZE_REG_BYTE];
     uint16_t regs_word[SIZE_REG_WORD], stack[SIZE_STACK];
 };
@@ -17,7 +17,7 @@ typedef struct register_type
 Register reg_create()
 {
     Register reg = calloc(1,
-                     sizeof(struct register_type));
+                          sizeof(struct register_type));
     return reg;
 }
 
@@ -102,7 +102,7 @@ void reg_sub_reg(Register cpu,
 
     result = y - x;
 
-    //setting value of reg_dst
+    // setting value of reg_dst
     reg_set_byte(cpu,
                  reg_dst,
                  result);
@@ -123,7 +123,7 @@ void reg_subn_reg(Register cpu,
 
     result = x - y;
 
-    //setting value of reg_dst
+    // setting value of reg_dst
     reg_set_byte(cpu,
                  reg_dst,
                  result);
@@ -151,7 +151,9 @@ void reg_load(Register cpu,
               uint8_t src,
               uint8_t dst)
 {
-    reg_set_byte(cpu, dst, reg_get_byte(cpu, src));
+    reg_set_byte(cpu,
+                 dst,
+                 reg_get_byte(cpu, src));
 }
 
 void reg_set_flag(Register cpu,
@@ -159,7 +161,7 @@ void reg_set_flag(Register cpu,
                   bool value)
 {
     reg_set_byte(cpu,
-                 REG_BYTE_V15,
+                 REG_BYTE_VF,
                  value);
 }
 
@@ -237,5 +239,5 @@ bool reg_get_flag(Register cpu,
                   Flag flag)
 {
     return reg_get_byte(cpu,
-                        REG_BYTE_V15);
+                        REG_BYTE_VF);
 }

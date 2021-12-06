@@ -168,8 +168,8 @@ Instruction_log instruction_info[] = {
                  .operands[1] = {.addr = ADDR_ABS, .mask = 0x0}},
     [ID_Fx15] = {//0xFx15
                  .menemonic = MNE_LD,
-                 .operands[0] = {.addr = ADDR_REG, .mask = 0x0},
-                 .operands[1] = {.addr = ADDR_REG, .mask = 0x0}},
+                 .operands[0] = {.addr = ADDR_REG_TIMER, .mask = 0x0},
+                 .operands[1] = {.addr = ADDR_REG, .mask = 0x0F00}},
     [ID_Fx18] = {//0xFx18
                  .menemonic = MNE_LD,
                  .operands[0] = {.addr = ADDR_REG, .mask = 0x0},
@@ -265,6 +265,7 @@ static void print_addressing(uint16_t opcode,
             [ADDR_ABS] = "#",
             [ADDR_NULL] = "",
             [ADDR_REG_I] = "Vi",
+            [ADDR_REG_TIMER] = "Vt",
             [ADDR_REG_I_ARR] = "[I]"};
 
     printf("%s", arg_name[operand.addr]);
@@ -317,14 +318,14 @@ static void print_intruction(Instruction_log info)
     }
 }
 
-void print_state(Register reg)
+void debug_print_state(Register reg)
 {
-    for (size_t i = 0; i < SIZE_REG_BYTE; i++)
-        printf("V%d ", i);
+    for (size_t i = 0; i < SIZE_REG_BYTE - 1; i++)
+        printf("V%.2x ", i);
 
-    for (size_t i = 0; i < SIZE_REG_BYTE; i++)
-        printf(" %d ", reg_get_byte(reg, i));
-    
+    printf("\n");
+    for (size_t i = 0; i < SIZE_REG_BYTE - 1; i++)
+        printf("%.3x ", reg_get_byte(reg, i));
     printf("\n");
 }
 
@@ -355,6 +356,8 @@ static uint16_t dissasembler(uint16_t op)
         return ID_Dxyn;
     case 0xA000:
         return ID_Annn;
+    case 0xB000:
+        return ID_Bnnn;
     default:
         switch (op & 0xF0FF)
         {

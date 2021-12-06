@@ -103,11 +103,13 @@ static void inva_opt(Args *args)
 }
 
 static void debug(uint16_t op,
+                  Register reg,
                   Debugger deb)
 {
     //debugger
 #if defined(DEBUG)
     {
+        printf("PC: %4x, OP: %4x          ", reg_get_pc(reg), op);
         debug_add_instruction(deb,
                               op);
 
@@ -117,7 +119,7 @@ static void debug(uint16_t op,
 }
 
 static int init(int argc,
-         char *argv[])
+                char *argv[])
 {
     /* Default args */
     Args args = {
@@ -183,7 +185,7 @@ static int init(int argc,
 }
 
 static void poolEvents(Signal *sig,
-                Keyboard keyboard)
+                       Keyboard keyboard)
 {
     key_pool(keyboard);
     sig->sig_halt = (key_is_quit_event(keyboard) == true);
@@ -191,10 +193,10 @@ static void poolEvents(Signal *sig,
 }
 
 static void clean(Register reg,
-           Memory mem,
-           Gfx gfx,
-           Keyboard key,
-           Debugger deb)
+                  Memory mem,
+                  Gfx gfx,
+                  Keyboard key,
+                  Debugger deb)
 {
     gfx_clean_up(gfx);
     gfx_destroy(gfx);
@@ -205,8 +207,8 @@ static void clean(Register reg,
 }
 
 static void loader(Memory mem,
-            ROM rom,
-            ROM fnt)
+                   ROM rom,
+                   ROM fnt)
 {
     mem_load(mem,
              rom->n,
@@ -224,11 +226,11 @@ static void loader(Memory mem,
 }
 
 static void loop(Register reg,
-          Memory mem,
-          Gfx gfx,
-          Keyboard key,
-          Debugger deb,
-          int fps)
+                 Memory mem,
+                 Gfx gfx,
+                 Keyboard key,
+                 Debugger deb,
+                 int fps)
 {
     SDL_Event event; //The event structure that will be used
 
@@ -259,10 +261,23 @@ static void loop(Register reg,
             //Update Screen
             gfx_flip(gfx);
 
-            //debug
+            //debug 
             debug(op,
+                  reg,
                   deb);
+                  
+        }else
+        {
+            switch (key_pressed_now(key))
+            {
+            case 1:
+                debug_print_state(debug);
+                break;
+            default:
+                break;
+            }
         }
+
         now = SDL_GetTicks();
         SDL_Delay(ticks_per_sec - (now - last));
     }

@@ -192,6 +192,13 @@ void ins_annn(Register cpu,
               Keyboard key,
               uint16_t op);
 
+//JMP nnn + V0.
+void ins_bnnn(Register reg,
+              Memory mem,
+              Gfx gfx,
+              Keyboard keyboard,
+              uint16_t op);
+
 //SKIP if key in Vx is pressed - 0xEx9e
 void ins_ex9e(Register cpu,
               Memory mem,
