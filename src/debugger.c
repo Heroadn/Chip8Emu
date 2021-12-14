@@ -320,13 +320,16 @@ static void print_intruction(Instruction_log info)
 
 void debug_print_state(Register reg)
 {
-    for (size_t i = 0; i < SIZE_REG_BYTE - 1; i++)
-        printf("V%.2x ", i);
+    //for (size_t i = 0; i < SIZE_REG_BYTE - 1; i++)
+    //    printf("V%.2x ", i);
 
-    printf("\n");
+    //printf("\n");
+    printf("regs:[");
     for (size_t i = 0; i < SIZE_REG_BYTE - 1; i++)
-        printf("%.3x ", reg_get_byte(reg, i));
-    printf("\n");
+    {
+        printf("%x, ", reg_get_byte(reg, i));
+    }
+    printf("]");
 }
 
 //return instruction id

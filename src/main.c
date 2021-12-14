@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <sys/types.h>
 #define DEBUG
 
 //win32 needs a diferent entrypoint 'WinMain'
@@ -109,6 +110,7 @@ static void debug(uint16_t op,
     //debugger
 #if defined(DEBUG)
     {
+
         printf("PC: %4x, OP: %4x          ", reg_get_pc(reg), op);
         debug_add_instruction(deb,
                               op);
