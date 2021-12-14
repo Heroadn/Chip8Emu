@@ -12,12 +12,10 @@ Usage:
 ```
 
 # Keyboard - WINDOWS
-```
 0   1	2	3
 4	5	6	7	
 8	9   A   B
 C   D   E   F
-```
 
 # Build
 run ``` python3.7 build.py OS``` to build the emulator,
