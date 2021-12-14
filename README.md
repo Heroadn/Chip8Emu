@@ -13,7 +13,7 @@ Usage:
 
 # Build
 run ``` python3.7 build.py OS``` to build the emulator,
-OS can be WINDOWS|LINUX|RS90 -> ``` python3.7 build.py WINDOWS```
+```OS``` can be WINDOWS|LINUX|RS90 -> ``` python3.7 build.py WINDOWS```
 it can also build to linux or the rs90,
 executables will be moved to the folder
 with the Makefile name,
