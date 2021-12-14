@@ -20,7 +20,7 @@ ex: WINDOWS will use the Makefile.win -> \Makefile.win\main.exe
 
 # Todo
 cleaning up some code related to graphics,
-and other bugfixes
+and other bugfixes, and a debugger gui
 
 # Misc
 
