@@ -23,4 +23,9 @@ ex: you will use the Makefile.win -> \Makefile.win\main.exe
 cleaning up some code related to graphics,
 and other bugfixes
 
+# Misc
+
+build.py function is to move .o files from /src to /bin, 
+call linker and them move the executable to a especific folder  
+
 
