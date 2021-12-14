@@ -14,11 +14,9 @@ Usage:
 # Build
 run ``` python3.7 build.py OS``` to build the emulator,
 ```OS``` can be WINDOWS|LINUX|RS90 -> ``` python3.7 build.py WINDOWS```
-it can also build to linux or the rs90,
-executables will be moved to the folder
-with the Makefile name,
+executables will be moved to the folder with the Makefile name,
 Dlls at the moment need to be moved manualy
-ex: you will use the Makefile.win -> \Makefile.win\main.exe
+ex: WINDOWS will use the Makefile.win -> \Makefile.win\main.exe
 
 # Todo
 cleaning up some code related to graphics,
