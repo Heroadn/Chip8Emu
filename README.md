@@ -1,5 +1,12 @@
 # Chip-8
 
+Dont forget to unpack befored running the emu,
+also in the windows release there's a py.run,
+its a gui for choosing the rom to be run
+without all cmd, but you can run main.exe using the command line,
+see Cmd section for avaliable commands
+
+# Cmd
 ```
 Usage:
     -w Width of the screen
