@@ -18,15 +18,16 @@ Usage:
 C   D   E   F
 
 # Build
-run ``` python3.7 build.py OS``` to build the emulator,
-```OS``` can be WINDOWS|LINUX|RS90 -> ``` python3.7 build.py WINDOWS```
-executables will be moved to the folder with the Makefile name,
-Dlls at the moment need to be moved manualy
-ex: WINDOWS will use the Makefile.win -> \Makefile.win\main.exe
+run ``` python3.7 build.py WINDOWS|LINUX|RS90``` to build the emulator,
+-> ``` python3.7 build.py WINDOWS```
+executables will be moved to the folder with the Makefile name
+ex: 
+WINDOWS uses Makefile.win -> \Makefile.win\main.exe
 
 # Todo
 cleaning up some code related to graphics,
-and other bugfixes, and a debugger gui
+and other bugfixes, and a debugger gui,
+configurable keyboard layout, for now they are hardcoded
 
 # Misc
 
