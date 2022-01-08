@@ -8,6 +8,7 @@ teste
 lib/*.a
 lib/*.la
 lib/pkgconfig
+lib.win/
 .idea
 .vscode
 
