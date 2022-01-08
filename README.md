@@ -32,7 +32,7 @@ ex:
 WINDOWS uses Makefile.win -> \Makefile.win\main.exe
 
 # Todo
-cleaning up some code related to graphics,
+clean up some code related to graphics,
 more documentation, bugfixes, debugger gui, and a
 configurable keyboard layout, for now they are hardcoded
 
