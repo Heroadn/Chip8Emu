@@ -11,6 +11,13 @@ bin_path = root_path + "/bin"
 name_exec = "main.exe"
 name_make = "Makefile.win"
 
+if str(sys.argv[1]) == "LINUX":
+    name_exec = "main"
+    name_make = "Makefile.nix"
+elif str(sys.argv[1]) == "RS90":
+    name_exec = "main"
+    name_make = "Makefile.rs90"
+
 #calling make compile
 command = subprocess.run(['make', '-f', name_make, 'compile'], capture_output=True)
 sys.stdout.buffer.write(command.stdout)
@@ -40,7 +47,7 @@ sys.stderr.buffer.write(command.stderr)
 path_executable = build_path + "/" + name_make + "/";
 os.makedirs(os.path.dirname(path_executable), exist_ok=True)
 
-#move executable to build and dlls 
+#move executable if exist to build and move dlls also 
 if exists(path_executable + name_exec):
     os.remove(path_executable + name_exec)
 

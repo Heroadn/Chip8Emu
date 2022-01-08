@@ -20,6 +20,23 @@ int WinMain(int argc, char *argv[])
 }
 #endif
 
+static void debug(uint16_t op,
+                  Register reg,
+                  Debugger deb)
+{
+    //debugger
+#if defined(DEBUG)
+    {
+
+        printf("PC: %4x, OP: %4x          ", reg_get_pc(reg), op);
+        debug_add_instruction(deb,
+                              op);
+
+        debug_print(deb);
+    }
+#endif
+}
+
 /* Parse a single option. */
 static bool parse_opt(uint8_t key,
                       char *arg,
@@ -101,23 +118,6 @@ static void inva_opt(Args *args)
             printf("%s", args_doc[i]);
         exit(EXIT_FAILURE);
     }
-}
-
-static void debug(uint16_t op,
-                  Register reg,
-                  Debugger deb)
-{
-    //debugger
-#if defined(DEBUG)
-    {
-
-        printf("PC: %4x, OP: %4x          ", reg_get_pc(reg), op);
-        debug_add_instruction(deb,
-                              op);
-
-        debug_print(deb);
-    }
-#endif
 }
 
 static int init(int argc,
